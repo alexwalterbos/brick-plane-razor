@@ -1,13 +1,19 @@
-#include "Game.h"
+#include "game.h"
 #include <iostream>
+#include "tex.h"
 
 Game::Game()
 {
 	startWindowX = 640;
 	startWindowY = 480;
+
+	//const Texture &tex = loadTextureFromFile("somesprite.png");
+	//bird = new Bird(tex);
 	
 	if(!glfwInit())
 		throw "Failed to load glfw context!";
+	lastFrameTime = 0;
+
 	window = glfwCreateWindow(startWindowX, startWindowY, "Mustache Nemesis", NULL, NULL);
 	if(!window)
 	{
@@ -30,12 +36,16 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	if(key == GLFW_KEY_P && action == GLFW_PRESS)
 		pause();
 
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+		bird->flap();
 	//TODO BleepyBird here
 }
 
-void Game::update()
+void Game::update(double delta)
 {
-	//TODO update logic here
+
+	bird->update(delta);
+	//TODO update world logic here
 }
 
 void Game::draw() 
@@ -51,8 +61,15 @@ void Game::draw()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	//TODO matrix here
-	//TODO draw world, bird, obstacles here
+	glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+	
+	glPushMatrix();
+	bird->draw();
+	glPopMatrix();
+
+	//TODO draw world, obstacles here
 }
 
 void Game::play()
@@ -61,10 +78,15 @@ void Game::play()
 
 	while(!glfwWindowShouldClose(window) && !shouldPause)
 	{
-		update();
+		double currentFrameTime = glfwGetTime();
+		double delta = currentFrameTime - lastFrameTime;
+
+		update(delta);
 		draw();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		lastFrameTime = currentFrameTime;
 	}
 }
 
