@@ -12,8 +12,9 @@ class Bird {
 		void draw();
 		Circle getBoundary();
 	private:
-		vec2<float> position, velocity;
+		vec2<double> position, velocity;
 		float size;
 		Circle boundary;
 		const Texture& texture;
+		double posx, posy, velx, vely;
 };

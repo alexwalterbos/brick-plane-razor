@@ -21,6 +21,8 @@ Game::Game()
 		throw "Could not create new window!";
 	}
 
+	glfwMakeContextCurrent(window);
+
 }
 
 GLFWwindow* Game::getWindow()
@@ -61,7 +63,7 @@ void Game::draw()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+	glOrtho(-ratio, ratio, -20.f, 20.f, 20.f, -40.f);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 	
