@@ -1,31 +1,26 @@
 #include "tex.h"
 #include <SOIL/SOIL.h>
+#include <stdlib.h>
+#include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
-Texture::Texture(GLuint id) 
+GLuint loadTextureFromFile(char const* fileName)
 {
-	this->id = id;
-}
+	GLuint tex_2d = SOIL_load_OGL_texture(fileName, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_POWER_OF_TWO
+			| SOIL_FLAG_MIPMAPS
+			| SOIL_FLAG_MULTIPLY_ALPHA
+			| SOIL_FLAG_COMPRESS_TO_DXT
+			| SOIL_FLAG_DDS_LOAD_DIRECT
+			| SOIL_FLAG_INVERT_Y
+			);
 
-GLuint Texture::getId() 
-{
-	return id;
-}
+	if(tex_2d == 0) 
+	{
+		throw std::invalid_argument("Failed to load texture");
+	}
 
-Texture loadTextureFromFile(char const* fileName)
-{
-	int width, height;
-	unsigned char* image = SOIL_load_image(fileName, &width, &height, 0, SOIL_LOAD_RGB);
-
-    	// Generate the OpenGL texture object
-    	GLuint textureId;
-    	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-   	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	SOIL_free_image_data(image);
-    	return Texture(textureId);
+    	return tex_2d;
 }

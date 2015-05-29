@@ -17,11 +17,15 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 	game.keyCallback(window, key, scancode, action, mods);
 }
 
+static void resizeCallback(GLFWwindow* window, int width, int height)
+{
+	game.resizeCallback(window, width, height);
+}
 int main() 
 {
-	game = Game();
 	glfwSetErrorCallback(errorCallback);
 	glfwSetKeyCallback(game.getWindow(), keyCallback);
+	glfwSetFramebufferSizeCallback(game.getWindow(), resizeCallback); 
 	try
 	{
 		game.play();

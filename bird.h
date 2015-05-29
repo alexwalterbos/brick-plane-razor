@@ -1,19 +1,20 @@
 #pragma once 
 
-#include "vec.h"
+#include "glm/glm.hpp"
 #include "col.h"
 #include "tex.h"
 
 class Bird {
 	public:
-		Bird(const Texture& texture);
+		Bird(const GLuint texture);
 		void flap();
 		void update(double deltaTime);
 		void draw();
 		Circle getBoundary();
+		glm::vec2 getPosition();
 	private:
-		vec2<float> position, velocity;
+		glm::vec2 position, velocity;
 		float size;
 		Circle boundary;
-		const Texture& texture;
+		const GLuint texture;
 };
