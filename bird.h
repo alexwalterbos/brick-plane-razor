@@ -11,10 +11,11 @@ class Bird {
 		void update(double deltaTime);
 		void draw();
 		Circle getBoundary();
-		glm::vec2 getPosition();
+		glm::vec3 getPosition();
 	private:
-		glm::vec2 position, velocity;
+		glm::vec3 position, velocity;
 		float size;
 		Circle boundary;
 		const GLuint texture;
+		double time;
 };
