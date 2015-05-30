@@ -14,10 +14,9 @@ class Bird {
 		glm::vec3 getPosition();
 		void reset();
 	private:
-		glm::vec3 position, velocity;
-		float size;
+		glm::vec3 position, velocity, gravity;
+		float size, lastPitch;
 		Circle* collider;
 		const GLuint texture;
-		double time;
 		void init();
 };
