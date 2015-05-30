@@ -10,12 +10,14 @@ class Bird {
 		void flap();
 		void update(double deltaTime);
 		void draw();
-		Circle getBoundary();
+		Circle* getCollider();
 		glm::vec3 getPosition();
+		void reset();
 	private:
 		glm::vec3 position, velocity;
 		float size;
-		Circle boundary;
+		Circle* collider;
 		const GLuint texture;
 		double time;
+		void init();
 };

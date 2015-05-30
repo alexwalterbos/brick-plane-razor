@@ -1,11 +1,11 @@
+#include "glm/glm.hpp"
+
 struct Square {
-	//Center position
-	float x, y;
-	float width, height;
+	glm::vec2 min, max;
 };
 
 struct Circle {
 	//Center position
-	float x, y;
+	glm::vec2 center;
 	float radius;
 };

@@ -2,18 +2,23 @@
 #include <GLFW/glfw3.h>
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/ext.hpp"
-#include <stdlib.h>
-#include <iostream>
 #include <cmath>
 #include <ctime>
 
 Bird::Bird(const GLuint texture):
 	texture(texture)
 {
+	init();
+}
+void Bird::init()
+{
 	position = glm::vec3(0.f, 0.f, 0.f);
 	velocity = glm::vec3(0.f, 0.f, 0.f);
 	time = 0.0;
+
+	collider = new Circle();
+	collider->center = glm::vec2(position.x, position.y);
+	collider->radius = 0.1f;
 }
 
 void Bird::flap()
@@ -27,12 +32,12 @@ void Bird::update(double deltaTime)
 	velocity.y = cos(time)/100;
 
 	position += velocity;
+	collider->center = glm::vec2(position.x, position.y);
 }
 
 void Bird::draw()
 {
 	glDepthMask(GL_FALSE);
-
 
 	glm::mat4 identity = glm::mat4(1.0f);
 	glm::mat4 result = identity;
@@ -57,12 +62,17 @@ void Bird::draw()
 	glDepthMask(GL_TRUE);
 }
 
+void Bird::reset()
+{
+	init();
+}
+
 glm::vec3 Bird::getPosition()
 {
 	return position;
 }
 
-Circle Bird::getBoundary()
+Circle* Bird::getCollider()
 {
-	return boundary;
+	return collider;
 }
