@@ -1,5 +1,4 @@
 #include "game.h"
-#include <iostream>
 #include "tex.h"
 
 Game::Game()
@@ -78,7 +77,31 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 void Game::update(double delta)
 {
 	bird->update(delta);
+
+	checkCollision();
+
 	//TODO update world logic here
+}
+
+void Game::checkCollision()
+{
+	Circle* collider = bird->getCollider();
+	
+	float top = collider->center.y + collider->radius;
+	float bottom = collider->center.y - collider->radius;
+
+	if(top > 0.9f || bottom < -0.9f)
+	{
+		handleCollision();
+	}
+}
+
+void Game::handleCollision()
+{
+	//TODO show replay screen?
+	bird->reset();
+
+	//TODO world reset
 }
 
 void Game::draw() 

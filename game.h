@@ -28,4 +28,6 @@ class Game
 		void initWindow();
 		void drawBackground();
 		void drawObstacles();
+		void checkCollision();
+		void handleCollision();
 };
