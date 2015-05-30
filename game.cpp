@@ -99,6 +99,7 @@ void Game::draw()
 
 void Game::drawBackground()
 {
+	glDisable(GL_DEPTH_TEST);
 	glTexParameteri( GL_TEXTURE_2D, 
                  GL_TEXTURE_WRAP_T, 
                  GL_REPEAT );	
@@ -113,6 +114,7 @@ void Game::drawBackground()
 	glTexCoord2f(ratio, 0.f); glVertex3f(ratio, -1.f, 10.f);
 	glTexCoord2f(0.f, 0.f); glVertex3f(-ratio, -1.f, 10.f);
 	glEnd();
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Game::drawObstacles()
