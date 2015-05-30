@@ -1,6 +1,8 @@
 #include "game.h"
 #include "tex.h"
 #include <glm/ext.hpp>
+#include <functional>
+#include <algorithm>
 
 Game::Game()
 {
@@ -80,6 +82,7 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 void Game::update(double delta)
 {
 	bird->update(delta);
+	updateVisibility();
 
 	updateWorldRect();
 
@@ -100,6 +103,21 @@ void Game::updateWorldRect()
 	worldRect->max = glm::vec2(ratio + birdOffset, 1);
 }
 
+void Game::updateVisibility()
+{
+	auto world = getWorldRect();
+	auto func = bind(isVisible, placeholders::_1, *world);
+
+	//Copy all visible objects to visibleObstacles
+	auto it = copy_if(obstacles.begin(), obstacles.end(), visibleObstacles.begin(), func);
+	visibleObstacles.resize(distance(visibleObstacles.begin(), it));
+}
+
+bool isVisible(shared_ptr<Obstacle> obstacle, const Rect & rect)
+{
+	return obstacle->inside(rect);
+}
+
 void Game::checkCollision()
 {
 	Circle* collider = bird->getCollider();
@@ -111,6 +129,12 @@ void Game::checkCollision()
 	{
 		handleCollision();
 	}
+
+	//Only check collision for visible obstacles	
+	for (vector<shared_ptr<Obstacle>>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	{
+				
+	}
 }
 
 void Game::handleCollision()
@@ -119,6 +143,15 @@ void Game::handleCollision()
 	bird->reset();
 
 	//TODO world reset
+}
+
+unique_ptr<Rect> Game::getWorldRect()
+{
+	float birdOffset = bird->getPosition().x;
+	auto world = unique_ptr<Rect>(new Rect());
+	world->min = glm::vec2(-ratio + birdOffset, -1);
+	world->max = glm::vec2(ratio + birdOffset, 1);
+	return world;
 }
 
 void Game::draw() 

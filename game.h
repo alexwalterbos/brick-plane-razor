@@ -1,11 +1,16 @@
 #pragma once 
 
 #include <GLFW/glfw3.h>
-#include "bird.h"
+#include <stdlib.h>
+#include <vector>
 #include <memory>
+#include "bird.h"
 #include "col.h"
+#include "obstacle.h"
 
 using namespace std;
+
+bool isVisible(shared_ptr<Obstacle> obstacle, const Rect & rect);
 
 class Game
 {
@@ -27,6 +32,9 @@ class Game
 		GLFWwindow* window;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
+		vector<shared_ptr<Obstacle>> obstacles;
+		vector<shared_ptr<Obstacle>> visibleObstacles;
+
 		void draw();
 		void update(double delta);
 		void initGLObjs();
@@ -38,4 +46,6 @@ class Game
 		void handleCollision();
 		void updateWorldRect();
 		void generateWorld();
+		void updateVisibility();
+		unique_ptr<Rect> getWorldRect();
 };
