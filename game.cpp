@@ -85,7 +85,12 @@ void Game::update(double delta)
 
 	checkCollision();
 
+
 	//TODO update world logic here
+}
+void Game::generateWorld()
+{	
+	//TODO pretty world	
 }
 
 void Game::updateWorldRect()

@@ -32,8 +32,10 @@ class Game
 		void initGLObjs();
 		void initWindow();
 		void drawBackground();
+		void drawWorld();
 		void drawObstacles();
 		void checkCollision();
 		void handleCollision();
 		void updateWorldRect();
+		void generateWorld();
 };
