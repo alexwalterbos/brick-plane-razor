@@ -5,12 +5,15 @@
 #include "glm/ext.hpp"
 #include <stdlib.h>
 #include <iostream>
+#include <cmath>
+#include <ctime>
 
 Bird::Bird(const GLuint texture):
 	texture(texture)
 {
-	position = glm::vec2(0.f, 0.f);
-	velocity = glm::vec2(1.f, 0.f);
+	position = glm::vec3(0.f, 0.f, 0.f);
+	velocity = glm::vec3(0.f, 0.f, 0.f);
+	time = 0.0;
 }
 
 void Bird::flap()
@@ -20,17 +23,24 @@ void Bird::flap()
 
 void Bird::update(double deltaTime)
 {
-	//TODO handle actual flap consequence here
+	time += deltaTime;
+	velocity.y = cos(time)/100;
+
+	position += velocity;
 }
 
 void Bird::draw()
 {
 	glDepthMask(GL_FALSE);
 
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f));
-	transform = glm::scale(transform, glm::vec3(0.5f));
 
-	glLoadMatrixf(glm::value_ptr(transform));
+	glm::mat4 identity = glm::mat4(1.0f);
+	glm::mat4 result = identity;
+	result = glm::translate(result, position);
+	result = glm::rotate(result, (float) atan(velocity.y)*5000, glm::vec3(0.0f, 0.f, 1.f));
+	result = glm::scale(result, glm::vec3(0.5f));
+
+	glLoadMatrixf(glm::value_ptr(result));
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexEnvf(GL_TEXTURE_2D,GL_TEXTURE_ENV_MODE,GL_MODULATE);
 	glDepthMask(GL_FALSE);
@@ -47,7 +57,7 @@ void Bird::draw()
 	glDepthMask(GL_TRUE);
 }
 
-glm::vec2 Bird::getPosition()
+glm::vec3 Bird::getPosition()
 {
 	return position;
 }
