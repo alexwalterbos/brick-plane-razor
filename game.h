@@ -6,18 +6,16 @@
 #include <memory>
 #include "bird.h"
 #include "col.h"
-#include "obstacle.h"
 
 using namespace std;
 
-bool isVisible(shared_ptr<Obstacle> obstacle, const Rect & rect);
+bool isVisible(Rect obstacle, const Rect & worldRect);
 
 class Game
 {
 	public:
 		Game();
 		void play();
-		void pause();
 		void stop();
 		GLFWwindow* getWindow();
 		void errorCallback(int error, const char* description);
@@ -27,13 +25,14 @@ class Game
 		float ratio;
 		GLuint backgroundTexture;
 		double lastFrameTime;
-		int shouldPause;
+		bool paused = false;
 		int startWindowX, startWindowY;
 		GLFWwindow* window;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
-		vector<shared_ptr<Obstacle>> obstacles;
-		vector<shared_ptr<Obstacle>> visibleObstacles;
+		vector<Rect> obstacles;
+		vector<Rect> visibleObstacles;
+		float startSeparation = 2.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.5f;
 
 		void draw();
 		void update(double delta);
