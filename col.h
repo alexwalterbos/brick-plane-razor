@@ -1,5 +1,4 @@
-#ifndef COL_H_
-#define COL_H_
+#pragma once
 
 #include "glm/glm.hpp"
 
@@ -12,5 +11,3 @@ struct Circle {
 	glm::vec2 center;
 	float radius;
 };
-
-#endif
