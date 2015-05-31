@@ -1,6 +1,9 @@
+#ifndef COL_H_
+#define COL_H_
+
 #include "glm/glm.hpp"
 
-struct Square {
+struct Rect {
 	glm::vec2 min, max;
 };
 
@@ -9,3 +12,5 @@ struct Circle {
 	glm::vec2 center;
 	float radius;
 };
+
+#endif
