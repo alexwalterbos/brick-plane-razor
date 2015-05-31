@@ -1,5 +1,6 @@
 #include "game.h"
 #include "tex.h"
+#include <glm/ext.hpp>
 
 Game::Game()
 {
@@ -11,7 +12,6 @@ Game::Game()
 	lastFrameTime = 0;
 
 	initWindow();
-
 	
 	initGLObjs();
 }
@@ -36,9 +36,12 @@ void Game::initGLObjs()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	const GLuint tex = loadTextureFromFile("img/pidgeot.png");
-	bird = new Bird(tex);
+	bird = unique_ptr<Bird>(new Bird(tex));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
+
+	worldRect = unique_ptr<Rect>(new Rect());
+	updateWorldRect();
 }
 
 void Game::initWindow()
@@ -78,9 +81,18 @@ void Game::update(double delta)
 {
 	bird->update(delta);
 
+	updateWorldRect();
+
 	checkCollision();
 
 	//TODO update world logic here
+}
+
+void Game::updateWorldRect()
+{
+	float birdOffset = bird->getPosition().x;
+	worldRect->min = glm::vec2(-ratio + birdOffset, -1);
+	worldRect->max = glm::vec2(ratio + birdOffset, 1);
 }
 
 void Game::checkCollision()
@@ -109,7 +121,7 @@ void Game::draw()
         glClear(GL_COLOR_BUFFER_BIT);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(-ratio, ratio, -1.f, 1.f, 0.f, -10.f);
+        glOrtho(worldRect->min.x, worldRect->max.x, worldRect->min.y, worldRect->max.y, 0.f, -10.f);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
@@ -132,10 +144,10 @@ void Game::drawBackground()
 	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.f, 1.f); glVertex3f(-ratio, 1.f, 10.f);
-    	glTexCoord2f(ratio, 1.f); glVertex3f(ratio, 1.f, 10.f);
-	glTexCoord2f(ratio, 0.f); glVertex3f(ratio, -1.f, 10.f);
-	glTexCoord2f(0.f, 0.f); glVertex3f(-ratio, -1.f, 10.f);
+	glTexCoord2f(worldRect->min.x, 1.f); glVertex2f(worldRect->min.x, worldRect->max.y);
+	glTexCoord2f(worldRect->max.x, 1.f); glVertex2fv(glm::value_ptr(worldRect->max));
+	glTexCoord2f(worldRect->max.x, 0.f); glVertex2f(worldRect->max.x, worldRect->min.y);
+	glTexCoord2f(worldRect->min.x, 0.f); glVertex2fv(glm::value_ptr(worldRect->min));
 	glEnd();
 	glEnable(GL_DEPTH_TEST);
 }

@@ -13,7 +13,7 @@ Bird::Bird(const GLuint texture):
 void Bird::init()
 {
 	position = glm::vec3(0.f, 0.f, 0.f);
-	velocity = glm::vec3(0.f, 0.f, 0.f);
+	velocity = glm::vec3(1.f, 0.f, 0.f);
 	time = 0.0;
 
 	collider = new Circle();
@@ -31,7 +31,7 @@ void Bird::update(double deltaTime)
 	time += deltaTime;
 	velocity.y = cos(time)/100;
 
-	position += velocity;
+	position += velocity * (float)deltaTime;
 	collider->center = glm::vec2(position.x, position.y);
 }
 

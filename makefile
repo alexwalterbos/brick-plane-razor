@@ -1,7 +1,7 @@
 OBJS = game.o main.o bird.o tex.o
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG)
+CFLAGS = -Wall -c -std=c++11 $(DEBUG)
 LFLAGS = -Wall -lglfw -lGL -lSOIL $(DEBUG)
 
 mustache-nemesis : $(OBJS)

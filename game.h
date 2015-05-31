@@ -2,6 +2,10 @@
 
 #include <GLFW/glfw3.h>
 #include "bird.h"
+#include <memory>
+#include "col.h"
+
+using namespace std;
 
 class Game
 {
@@ -21,7 +25,8 @@ class Game
 		int shouldPause;
 		int startWindowX, startWindowY;
 		GLFWwindow* window;
-		Bird* bird;
+		unique_ptr<Bird> bird;
+		unique_ptr<Rect> worldRect;
 		void draw();
 		void update(double delta);
 		void initGLObjs();
@@ -30,4 +35,5 @@ class Game
 		void drawObstacles();
 		void checkCollision();
 		void handleCollision();
+		void updateWorldRect();
 };
