@@ -79,6 +79,9 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 
 	if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
 		bird->flap();
+
+	if(key == GLFW_KEY_F && action == GLFW_PRESS)
+		lastPew = bird->fire();
 }
 
 void Game::update(double delta)
@@ -197,6 +200,9 @@ void Game::draw()
 	
 	glPushMatrix();
 	bird->draw();
+	if(lastPew != 0){
+		lastPew->draw();
+	}
 	glPopMatrix();
 
 	drawObstacles();

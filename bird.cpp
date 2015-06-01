@@ -1,9 +1,10 @@
 #include "bird.h"
+#include "pew.h"
 #include <GLFW/glfw3.h>
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
 #include <cmath>
+#include <memory>
 
 #define PI 3.14159265
 
@@ -26,9 +27,13 @@ void Bird::init()
 
 void Bird::flap()
 {
-	//TODO handle flap state
-	
 	velocity.y=1.f;
+}
+
+unique_ptr<Pew> Bird::fire()
+{
+	const GLuint tex = loadTextureFromFile("img/pew-text.png");
+	return unique_ptr<Pew>(new Pew(tex, position));
 }
 
 void Bird::update(double deltaTime)

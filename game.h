@@ -3,8 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <vector>
-#include <memory>
 #include "bird.h"
+#include "pew.h"
+#include <memory>
 #include "col.h"
 
 using namespace std;
@@ -28,6 +29,7 @@ class Game
 		bool paused = false;
 		int startWindowX, startWindowY;
 		GLFWwindow* window;
+		unique_ptr<Pew> lastPew;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
 		vector<Rect> obstacles;
