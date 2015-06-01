@@ -1,6 +1,9 @@
 #include "game.h"
 #include "tex.h"
 #include <glm/ext.hpp>
+#include <functional>
+#include <algorithm>
+#include <random>
 
 Game::Game()
 {
@@ -42,6 +45,7 @@ void Game::initGLObjs()
 
 	worldRect = unique_ptr<Rect>(new Rect());
 	updateWorldRect();
+	generateWorld();
 }
 
 void Game::initWindow()
@@ -70,10 +74,10 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         	glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if(key == GLFW_KEY_P && action == GLFW_PRESS)
-		pause();
+	if(key == GLFW_KEY_P && action == GLFW_RELEASE)
+		paused = !paused;
 
-	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
 		bird->flap();
 }
 
@@ -81,11 +85,39 @@ void Game::update(double delta)
 {
 	bird->update(delta);
 
+	updateVisibility();
 	updateWorldRect();
-
 	checkCollision();
+}
 
-	//TODO update world logic here
+void Game::generateWorld()
+{	
+	//Separation between obstacles
+	float separation = startSeparation;
+	float currentPosition = obstacleStartPosition;
+
+	default_random_engine generator(random_device{}());
+	uniform_real_distribution<float> center(-0.8f, 0.8f);
+
+	while(currentPosition < playDistance)
+	{
+		float centerPos = center(generator);
+
+		Rect bottomCollider;
+		bottomCollider.min = glm::vec2(currentPosition, -1.f);
+		bottomCollider.max = glm::vec2(currentPosition + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
+
+		obstacles.push_back(bottomCollider);
+	
+		Rect topCollider;
+		topCollider.min = glm::vec2(currentPosition, centerPos + obstacleHoleSize/2.f);
+		topCollider.max = glm::vec2(currentPosition + obstaclesWidth, 1.f);
+
+		obstacles.push_back(topCollider);
+
+		currentPosition += separation;
+		separation -= 0.01f;
+	}
 }
 
 void Game::updateWorldRect()
@@ -93,6 +125,20 @@ void Game::updateWorldRect()
 	float birdOffset = bird->getPosition().x;
 	worldRect->min = glm::vec2(-ratio + birdOffset, -1);
 	worldRect->max = glm::vec2(ratio + birdOffset, 1);
+}
+
+void Game::updateVisibility()
+{
+	auto world = getWorldRect();
+	auto func = bind(isVisible, placeholders::_1, *world);
+
+	//Copy all visible objects to visibleObstacles
+	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
+}
+
+bool isVisible(Rect obstacle, const Rect & worldRect)
+{
+	return Collision::intersects(obstacle, worldRect);
 }
 
 void Game::checkCollision()
@@ -105,6 +151,17 @@ void Game::checkCollision()
 	if(top > 0.9f || bottom < -0.9f)
 	{
 		handleCollision();
+		return;
+	}
+
+	//Only check collision for visible obstacles	
+	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	{
+		if(Collision::intersects(*it, *collider)) 
+		{
+			handleCollision();
+			return;
+		}
 	}
 }
 
@@ -113,7 +170,18 @@ void Game::handleCollision()
 	//TODO show replay screen?
 	bird->reset();
 
-	//TODO world reset
+	obstacles.clear();
+	visibleObstacles.clear();
+	generateWorld();
+}
+
+unique_ptr<Rect> Game::getWorldRect()
+{
+	float birdOffset = bird->getPosition().x;
+	auto world = unique_ptr<Rect>(new Rect());
+	world->min = glm::vec2(-ratio + birdOffset, -1);
+	world->max = glm::vec2(ratio + birdOffset, 1);
+	return world;
 }
 
 void Game::draw() 
@@ -126,8 +194,10 @@ void Game::draw()
         glLoadIdentity();
 
 	drawBackground();
-
+	
+	glPushMatrix();
 	bird->draw();
+	glPopMatrix();
 
 	drawObstacles();
 }
@@ -154,19 +224,43 @@ void Game::drawBackground()
 
 void Game::drawObstacles()
 {
-	//TODO obstacles
+	glDisable(GL_DEPTH_TEST);
+	glBegin(GL_LINES);
+	glColor3f(1.f, 0.f, 0.f);
+	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	{
+		glm::vec2 a = it->min, 
+			b = glm::vec2(it->min.x, it->max.y),
+			c = it->max, 
+			d = glm::vec2(it->max.x, it->min.y);
+
+		glVertex2fv(glm::value_ptr(a));
+		glVertex2fv(glm::value_ptr(b));
+
+		glVertex2fv(glm::value_ptr(b));
+		glVertex2fv(glm::value_ptr(c));
+
+		glVertex2fv(glm::value_ptr(c));
+		glVertex2fv(glm::value_ptr(d));
+
+		glVertex2fv(glm::value_ptr(d));
+		glVertex2fv(glm::value_ptr(a));
+	}
+	glColor3f(1.f, 1.f, 1.f);
+	glEnd();
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Game::play()
 {
-	shouldPause = 0;
-
-	while(!glfwWindowShouldClose(window) && !shouldPause)
+	while(!glfwWindowShouldClose(window))
 	{
 		double currentFrameTime = glfwGetTime();
-		double delta = currentFrameTime - lastFrameTime;
-
-		update(delta);
+		if(!paused)
+		{
+			double delta = currentFrameTime - lastFrameTime;
+			update(delta);
+		}
 		draw();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -182,12 +276,4 @@ void Game::stop()
 {
 	glfwDestroyWindow(window);
 	glfwTerminate();
-}
-
-/**
- * We use a simple boolean based toggle to switch the state. 
- */
-void Game::pause()
-{
-	shouldPause = 1;
 }

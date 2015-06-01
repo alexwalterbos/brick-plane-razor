@@ -1,18 +1,21 @@
 #pragma once 
 
 #include <GLFW/glfw3.h>
-#include "bird.h"
+#include <stdlib.h>
+#include <vector>
 #include <memory>
+#include "bird.h"
 #include "col.h"
 
 using namespace std;
+
+bool isVisible(Rect obstacle, const Rect & worldRect);
 
 class Game
 {
 	public:
 		Game();
 		void play();
-		void pause();
 		void stop();
 		GLFWwindow* getWindow();
 		void errorCallback(int error, const char* description);
@@ -22,18 +25,26 @@ class Game
 		float ratio;
 		GLuint backgroundTexture;
 		double lastFrameTime;
-		int shouldPause;
+		bool paused = false;
 		int startWindowX, startWindowY;
 		GLFWwindow* window;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
+		vector<Rect> obstacles;
+		vector<Rect> visibleObstacles;
+		float startSeparation = 2.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.5f;
+
 		void draw();
 		void update(double delta);
 		void initGLObjs();
 		void initWindow();
 		void drawBackground();
+		void drawWorld();
 		void drawObstacles();
 		void checkCollision();
 		void handleCollision();
 		void updateWorldRect();
+		void generateWorld();
+		void updateVisibility();
+		unique_ptr<Rect> getWorldRect();
 };
