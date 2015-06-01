@@ -5,6 +5,8 @@
 #include "glm/gtc/quaternion.hpp"
 #include <cmath>
 
+#define PI 3.14159265
+
 Bird::Bird(const GLuint texture):
 	texture(texture)
 {
@@ -41,13 +43,9 @@ void Bird::draw()
 	glDepthMask(GL_FALSE);
 
 	// Pitch (forward tilt in planespeak) calculation.
-	//float pitch = (float) atan(velocity.y)*5000; // TODO Trial-and-error value
-	//float pitch = acos(glm::fastNormalizeDot(velocity, glm::vec3(1.f, 0.f, 0.f)))
-	glm::quat = glm::rotation(glm::normalize(velocity), glm::vec3(1.0f, 0.f, 0.f))
-	//pitch = fmax(pitch, -60.f);
-	//pitch = fmin(pitch, 75.f);
-	//pitch = (pitch + lastPitch*3)/4; // To smooth out the transition. Not effective on flap yet.
-	//lastPitch = pitch;
+	float pitch = (float) atan2(velocity.y, velocity.x) * 180 / PI;
+	pitch = (pitch + lastPitch*3)/4; // To smooth out the transition.
+	lastPitch = pitch;
 
 	glm::mat4 result = glm::mat4(1.0f);
 	result = glm::translate(result, position);
