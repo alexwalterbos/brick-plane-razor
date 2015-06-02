@@ -21,7 +21,6 @@ void Bird::init()
 	collider = new Circle();
 	collider->center = glm::vec2(position.x, position.y);
 	collider->radius = 0.1f;
-
 }
 
 void Bird::flap()

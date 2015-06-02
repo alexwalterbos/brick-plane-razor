@@ -36,36 +36,34 @@ GLuint Shader::compile(GLuint type, string path)
 
 Shader::Shader(string vertex_path, string fragment_path)
 {
-	vertex_shader = compile(GL_VERTEX_SHADER, vertex_path);
-        fragment_shader = compile(GL_FRAGMENT_SHADER, fragment_path);
-	geometry_shader = 0;
+	GLuint vertex_shader = compile(GL_VERTEX_SHADER, vertex_path);
+        GLuint fragment_shader = compile(GL_FRAGMENT_SHADER, fragment_path);
         prog = glCreateProgram();
         glAttachShader(prog, vertex_shader);
         glAttachShader(prog, fragment_shader);
         glLinkProgram(prog);
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
 }
 
 Shader::Shader(string vertex_path, string fragment_path, string geometry_path)
 {
-	vertex_shader = compile(GL_VERTEX_SHADER, vertex_path);
-	geometry_shader = compile(GL_GEOMETRY_SHADER, geometry_path);
-        fragment_shader = compile(GL_FRAGMENT_SHADER, fragment_path);
+	GLuint vertex_shader = compile(GL_VERTEX_SHADER, vertex_path);
+	GLuint geometry_shader = compile(GL_GEOMETRY_SHADER, geometry_path);
+        GLuint fragment_shader = compile(GL_FRAGMENT_SHADER, fragment_path);
         prog = glCreateProgram();
         glAttachShader(prog, vertex_shader);
 	glAttachShader(prog, geometry_shader);
         glAttachShader(prog, fragment_shader);
         glLinkProgram(prog);
+	glDeleteShader(vertex_shader);
+	glDeleteShader(geometry_shader);
+	glDeleteShader(fragment_shader);
 }
 
 Shader::~Shader()
 {
 	glDeleteProgram(prog);
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
-	if(geometry_shader != 0)
-	{
-		glDeleteShader(geometry_shader);
-	}
 }
 
 void Shader::useProgram()

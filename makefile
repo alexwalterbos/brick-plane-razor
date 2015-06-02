@@ -12,8 +12,8 @@ bird.o : bird.h bird.cpp vec.h col.h tex.o
 	$(CC) $(CFLAGS) bird.cpp
 tex.o : tex.h tex.cpp
 	$(CC) $(CFLAGS) tex.cpp
-shader.o : shader.h shader.cpp
-	$(CC) $(CFLAGS) shader.cpp
+shader.o : shaders/*
+	$(CC) -C $(CFLAGS) shaders/*.cpp
 main.o : game.o main.cpp 
 	$(CC) $(CFLAGS) main.cpp
 clean:
