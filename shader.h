@@ -1,13 +1,17 @@
 #pragma once
 
+#include <fstream>
 #include <GLFW/glfw3.h>
+
+using namespace std;
 
 class Shader {
 	private:
 		GLuint vertex_shader, geometry_shader, fragment_shader, prog;
-		template <int N> GLuint compile(GLuint type, char const *(&source)[N]);
+		GLuint compile(GLuint type, string file_name);
 	public:
-		template <int N, int M> Shader(GLchar const * (&v_source)[N], GLchar const *(&f_source)[M]);
-		template <int N, int M, int O> Shader(GLchar const * (&v_source)[N], GLchar const *(&f_source)[M], GLchar const * (&g_source)[O]);
+		Shader(string vertex_file, string fragment_file);
+		Shader(string vertex_file, string fragment_file, string geometry_file);
 		~Shader();
+		void useProgram();
 };
