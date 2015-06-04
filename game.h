@@ -39,6 +39,8 @@ class Game
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
 		vector<unique_ptr<Bullet>> bullets;
 
+		int heightMapStepX = 20, heightMapStepY = 6;
+		float quadSize = 0.5f, heightMapScale = 0.05f, heightLowerBound = -1.f, heightUpperBound = 0.f;
 		void draw();
 		void update(double delta);
 		void initGLObjs();
@@ -46,6 +48,8 @@ class Game
 		void drawBackground();
 		void drawWorld();
 		void drawObstacles();
+		void drawHeightMap();
+		void drawQuad(int stepX, int stepZ);
 		void checkCollision();
 		void handleCollision();
 		void updateWorldRect();

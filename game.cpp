@@ -1,5 +1,6 @@
 #include "game.h"
 #include "tex.h"
+#include "simplexnoise.h"
 #include <glm/ext.hpp>
 #include <functional>
 #include <algorithm>
@@ -257,9 +258,9 @@ void Game::draw()
         glOrtho(worldRect->min.x, worldRect->max.x, worldRect->min.y, worldRect->max.y, 0.f, -10.f);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+//	drawBackground();
+	drawHeightMap();
 
-	drawBackground();
-	
 	glPushMatrix();
 	bird->draw();
 	if(pew != 0){
@@ -276,6 +277,59 @@ void Game::draw()
 	glPopMatrix();
 
 	drawObstacles();
+}
+
+glm::vec3 computeNormal(glm::vec3 const & a, glm::vec3 const & b, glm::vec3 const & c)
+{
+	return glm::normalize(glm::cross(c - a, b - a));
+}
+
+void Game::drawHeightMap()
+{
+	glBegin(GL_TRIANGLES);
+	for(int i = 0; i < heightMapStepX; i++)
+	{
+		for(int j = 0; j < heightMapStepY; j++)
+		{
+			drawQuad(i, j);									
+		}
+	}
+	glEnd();
+}
+
+void Game::drawQuad(int stepX, int stepZ)
+{
+	float startX = bird->getPosition().x;
+
+	glm::vec3 a(startX + stepX * quadSize, 0, stepZ * quadSize),
+		b(startX + (stepX + 1) * quadSize, 0, stepZ * quadSize),
+		c(startX + stepX * quadSize, 0, (stepZ + 1) * quadSize),
+		d(startX + (stepX + 1) * quadSize, 0, (stepZ + 1) * quadSize);
+
+	a.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, a.x * heightMapScale, a.z * heightMapScale);
+	b.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, b.x * heightMapScale, b.z * heightMapScale);
+	c.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, c.x * heightMapScale, c.z * heightMapScale);
+	d.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, d.x * heightMapScale, d.z * heightMapScale);
+
+	glm::vec3 normal = computeNormal(a, b, c);
+
+	glVertex3fv(glm::value_ptr(a));
+	glNormal3fv(glm::value_ptr(normal));
+
+	glVertex3fv(glm::value_ptr(b));
+	glNormal3fv(glm::value_ptr(normal));
+
+	glVertex3fv(glm::value_ptr(c));
+	glNormal3fv(glm::value_ptr(normal));
+
+	glVertex3fv(glm::value_ptr(b));
+	glNormal3fv(glm::value_ptr(normal));
+
+	glVertex3fv(glm::value_ptr(d));
+	glNormal3fv(glm::value_ptr(normal));
+
+	glVertex3fv(glm::value_ptr(c));
+	glNormal3fv(glm::value_ptr(normal));
 }
 
 void Game::drawBackground()

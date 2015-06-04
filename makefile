@@ -1,4 +1,4 @@
-OBJS = game.o main.o bird.o tex.o pew.o bullet.o
+OBJS = game.o main.o bird.o tex.o pew.o bullet.o simplexnoise.o
 CC = g++
 DEBUG = -g
 CFLAGS = -Wall -c -std=c++11 $(DEBUG)
@@ -16,6 +16,8 @@ bullet.o : bullet.h bullet.cpp
 	$(CC) $(CFLAGS) bullet.cpp
 tex.o : tex.h tex.cpp
 	$(CC) $(CFLAGS) tex.cpp
+simplexnoise.o : simplexnoise.h simplexnoise.cpp
+	$(CC) $(CFLAGS) simplexnoise.cpp
 main.o : game.o main.cpp 
 	$(CC) $(CFLAGS) main.cpp
 clean:
