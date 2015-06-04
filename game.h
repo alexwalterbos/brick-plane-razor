@@ -6,6 +6,7 @@
 #include <memory>
 #include "bird.h"
 #include "col.h"
+#include "shader.h"
 
 using namespace std;
 
@@ -33,7 +34,7 @@ class Game
 		vector<Rect> obstacles;
 		vector<Rect> visibleObstacles;
 		float startSeparation = 2.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.5f;
-
+		shared_ptr<Shader> textureShader; 
 		void draw();
 		void update(double delta);
 		void initGLObjs();

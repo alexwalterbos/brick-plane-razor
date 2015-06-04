@@ -1,7 +1,10 @@
 #version 120
 
-layout(location=0) in vec3 position;
-layout(location=1) in vec2 texCoord;
+in vec3 position;
+in vec2 texCoord;
+
+uniform mat4 modelview;
+uniform mat4 projection;
 
 out Data {
 	vec2 texCoord;
@@ -9,5 +12,5 @@ out Data {
 
 int main() {
 	DataOut.texCoord = texCoord;
-	gl_position = ftransform();	
+	gl_position = projection * modelview * vec4(position, 1);
 }

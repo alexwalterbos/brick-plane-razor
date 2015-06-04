@@ -66,7 +66,7 @@ Shader::~Shader()
 	glDeleteProgram(prog);
 }
 
-void Shader::useProgram()
+void Shader::use()
 {
 	if(prog == 0) 
 	{
@@ -74,4 +74,47 @@ void Shader::useProgram()
 	}
 
 	glUseProgram(prog);
+}
+
+void Shader::disable()
+{
+	glUseProgram(0);
+}
+
+void Shader::addAttribute(string attributeLocation)
+{
+	attributeMap[attributeLocation] = glGetAttribLocation(prog, attributeLocation.c_str());
+}
+
+void Shader::addUniform(string uniformLocation)
+{
+	uniformMap[uniformLocation] = glGetUniformLocation(prog, uniformLocation.c_str());
+}
+
+GLuint Shader::attribute(string attributeLocation)
+{
+	std::map<string, GLuint>::iterator it = attributeMap.find(attributeLocation);
+
+	if ( it != attributeMap.end() )
+	{
+		return attributeMap[attributeLocation];
+	}
+	else
+	{
+		throw logic_error("Could not find '" + attributeLocation +  "' in attributes");
+	}
+}
+
+GLuint Shader::uniform(string uniformLocation)
+{
+	std::map<string, GLuint>::iterator it = uniformMap.find(uniformLocation);
+
+	if ( it != uniformMap.end() )
+	{
+		return uniformMap[uniformLocation];
+	}
+	else
+	{
+		throw logic_error("Could not find '" + uniformLocation +  "' in uniforms");
+	}
 }
