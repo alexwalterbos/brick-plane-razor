@@ -38,7 +38,7 @@ void Game::initGLObjs()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	const GLuint tex = loadTextureFromFile("img/pidgeot.png");
+	const GLuint tex = loadTextureFromFile("img/cannon.png");
 	bird = unique_ptr<Bird>(new Bird(tex));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
