@@ -1,9 +1,10 @@
 #include "bird.h"
+#include "pew.h"
 #include <GLFW/glfw3.h>
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
 #include <cmath>
+#include <memory>
 
 #define PI 3.14159265
 
@@ -15,8 +16,8 @@ Bird::Bird(const GLuint texture):
 void Bird::init()
 {
 	position = glm::vec3(0.f, 0.f, 0.f);
-	velocity = glm::vec3(1.f, 0.f, 0.f);
-	gravity = glm::vec3(0.f, -0.8f, 0.f);
+	velocity = glm::vec3(1.5f, 0.f, 0.f);
+	gravity = glm::vec3(0.f, -2.5f, 0.f);
 
 	collider = new Circle();
 	collider->center = glm::vec2(position.x, position.y);
@@ -26,9 +27,13 @@ void Bird::init()
 
 void Bird::flap()
 {
-	//TODO handle flap state
-	
-	velocity.y=1.f;
+	velocity.y=1.5f;
+}
+
+unique_ptr<Pew> Bird::fire()
+{
+	const GLuint tex = loadTextureFromFile("img/pew-text.png");
+	return unique_ptr<Pew>(new Pew(tex, position));
 }
 
 void Bird::update(double deltaTime)
@@ -50,7 +55,7 @@ void Bird::draw()
 	glm::mat4 result = glm::mat4(1.0f);
 	result = glm::translate(result, position);
 	result = glm::rotate(result, pitch, glm::vec3(0.0f, 0.f, 1.f));
-	result = glm::scale(result, glm::vec3(0.5f));
+	result = glm::scale(result, glm::vec3(0.2f));
 
 	glLoadMatrixf(glm::value_ptr(result));
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -63,7 +68,6 @@ void Bird::draw()
 	glTexCoord2f(1.f,0.f); glVertex3f( 1.f, -1.f, 0.f);
 	glTexCoord2f(0.f,0.f); glVertex3f(-1.f, -1.f, 0.f);
 	glEnd();
-	glPopMatrix();
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDepthMask(GL_TRUE);

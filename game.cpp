@@ -74,11 +74,14 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         	glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if(key == GLFW_KEY_P && action == GLFW_RELEASE)
+	if(key == GLFW_KEY_P && action == GLFW_PRESS)
 		paused = !paused;
 
-	if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 		bird->flap();
+
+	if(key == GLFW_KEY_F && action == GLFW_PRESS)
+		lastPew = bird->fire();
 }
 
 void Game::update(double delta)
@@ -169,6 +172,7 @@ void Game::handleCollision()
 {
 	//TODO show replay screen?
 	bird->reset();
+	lastPew = 0;
 
 	obstacles.clear();
 	visibleObstacles.clear();
@@ -197,6 +201,9 @@ void Game::draw()
 	
 	glPushMatrix();
 	bird->draw();
+	if(lastPew != 0){
+		lastPew->draw();
+	}
 	glPopMatrix();
 
 	drawObstacles();
