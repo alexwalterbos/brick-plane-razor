@@ -26,7 +26,6 @@ void Pew::draw()
 	glTexCoord2f(1.f,0.f); glVertex3f( 1.f, -0.5f, 0.f);
 	glTexCoord2f(0.f,0.f); glVertex3f(-1.f, -0.5f, 0.f);
 	glEnd();
-	glPopMatrix();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDepthMask(GL_TRUE);

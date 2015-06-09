@@ -34,7 +34,7 @@ class Game
 		unique_ptr<Rect> worldRect;
 		vector<Rect> obstacles;
 		vector<Rect> visibleObstacles;
-		float startSeparation = 2.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.5f;
+		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
 
 		void draw();
 		void update(double delta);
