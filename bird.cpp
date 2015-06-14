@@ -27,13 +27,13 @@ void Bird::init()
 
 void Bird::flap()
 {
-	velocity.y=1.5f;
+	velocity.y+=2.5f;
 }
 
-unique_ptr<Pew> Bird::fire()
+unique_ptr<Bullet> Bird::fire()
 {
 	const GLuint tex = loadTextureFromFile("img/pew-text.png");
-	return unique_ptr<Pew>(new Pew(tex, position));
+	return unique_ptr<Bullet>(new Bullet(tex, position, velocity * 3.f));
 }
 
 void Bird::update(double deltaTime)

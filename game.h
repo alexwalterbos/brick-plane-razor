@@ -7,6 +7,7 @@
 #include "pew.h"
 #include <memory>
 #include "col.h"
+#include <list>
 
 using namespace std;
 
@@ -29,12 +30,13 @@ class Game
 		bool paused = false;
 		int startWindowX, startWindowY;
 		GLFWwindow* window;
-		unique_ptr<Pew> lastPew;
+		unique_ptr<Pew> pew;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
 		vector<Rect> obstacles;
 		vector<Rect> visibleObstacles;
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
+		std::list<unique_ptr<Bullet>> bullets;
 
 		void draw();
 		void update(double delta);
@@ -49,4 +51,5 @@ class Game
 		void generateWorld();
 		void updateVisibility();
 		unique_ptr<Rect> getWorldRect();
+		void handleFire();
 };

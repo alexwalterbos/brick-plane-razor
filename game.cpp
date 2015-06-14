@@ -4,6 +4,8 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+#include <list>
+#include <iostream>
 
 Game::Game()
 {
@@ -71,7 +73,7 @@ void Game::resizeCallback(GLFWwindow* window, int width, int height)
 
 void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         	glfwSetWindowShouldClose(window, GL_TRUE);
 
 	if(key == GLFW_KEY_P && action == GLFW_PRESS)
@@ -81,12 +83,29 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		bird->flap();
 
 	if(key == GLFW_KEY_F && action == GLFW_PRESS)
-		lastPew = bird->fire();
+		handleFire();
+}
+
+void Game::handleFire()
+{
+	// TODO handle multiple bullets.
+	bullets.push_back(bird->fire());
+	GLuint tex = loadTextureFromFile("img/pew-text.png");
+	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
 }
 
 void Game::update(double delta)
 {
 	bird->update(delta);
+
+	if(!bullets.empty())
+	{
+		list<unique_ptr<Bullet>>::iterator i;
+		for(i = bullets.begin(); i != bullets.end(); ++i) 
+		{
+			(*i)->update(delta);
+		}
+	}
 
 	updateVisibility();
 	updateWorldRect();
@@ -172,7 +191,7 @@ void Game::handleCollision()
 {
 	//TODO show replay screen?
 	bird->reset();
-	lastPew = 0;
+	pew = 0;
 
 	obstacles.clear();
 	visibleObstacles.clear();
@@ -201,8 +220,16 @@ void Game::draw()
 	
 	glPushMatrix();
 	bird->draw();
-	if(lastPew != 0){
-		lastPew->draw();
+	if(pew != 0){
+		pew->draw();
+	}
+	if(!bullets.empty())
+	{
+		list<unique_ptr<Bullet>>::iterator i;
+		for(i = bullets.begin(); i != bullets.end(); ++i) 
+		{
+			(*i)->draw();
+		}
 	}
 	glPopMatrix();
 

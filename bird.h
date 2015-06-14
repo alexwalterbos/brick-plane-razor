@@ -4,6 +4,7 @@
 #include "col.h"
 #include "tex.h"
 #include "pew.h"
+#include "bullet.h"
 #include <memory>
 
 using namespace std;
@@ -12,7 +13,7 @@ class Bird {
 	public:
 		Bird(const GLuint texture);
 		void flap();
-		unique_ptr<Pew> fire();
+		unique_ptr<Bullet> fire();
 		void update(double deltaTime);
 		void draw();
 		Circle* getCollider();
