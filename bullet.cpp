@@ -6,11 +6,12 @@
 
 #define PI 3.14159265
 
-Bullet::Bullet(const GLuint texture, glm::vec3 pos, glm::vec3 vel):
+Bullet::Bullet(const GLuint texture, glm::vec3 pos, glm::vec3 direction):
 	texture(texture)
 {
 	position = pos;
-	velocity = vel;
+	velocity = direction * 5.f;
+	rotation = 0.0f;
 	collider = new Circle();
 	collider->center = glm::vec2(position.x, position.y);
 	collider->radius = 0.05f;
@@ -24,8 +25,7 @@ void Bullet::draw()
 	glDepthMask(GL_FALSE);
 	glm::mat4 result = glm::mat4(1.0f);
 	result = glm::translate(result, position);
-	std::cout << pitch << std::endl;
-	result = glm::rotate(result, pitch, glm::vec3(0.0f, 0.0f, 1.0f));
+	result = glm::rotate(result, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
 	result = glm::scale(result, glm::vec3(0.1f));
 	
 	glLoadMatrixf(glm::value_ptr(result));
@@ -46,6 +46,7 @@ void Bullet::draw()
 
 void Bullet::update(double deltaTime)
 {
+	rotation += 360.f * (float) deltaTime;
 	position += velocity * (float) deltaTime;
 	collider->center = glm::vec2(position.x, position.y);
 }

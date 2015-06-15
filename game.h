@@ -7,11 +7,11 @@
 #include "pew.h"
 #include <memory>
 #include "col.h"
-#include <list>
 
 using namespace std;
 
 bool isVisible(Rect obstacle, const Rect & worldRect);
+bool isCircleVisible(Circle circle, const Rect & worldRect);
 
 class Game
 {
@@ -36,7 +36,7 @@ class Game
 		vector<Rect> obstacles;
 		vector<Rect> visibleObstacles;
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
-		std::list<unique_ptr<Bullet>> bullets;
+		vector<unique_ptr<Bullet>> bullets;
 
 		void draw();
 		void update(double delta);

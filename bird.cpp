@@ -28,12 +28,15 @@ void Bird::init()
 void Bird::flap()
 {
 	velocity.y+=2.5f;
+	if(velocity.y > 2.0f) {
+		velocity.y = 2.0f;
+	}
 }
 
 unique_ptr<Bullet> Bird::fire()
 {
 	const GLuint tex = loadTextureFromFile("img/pew-text.png");
-	return unique_ptr<Bullet>(new Bullet(tex, position, velocity * 3.f));
+	return unique_ptr<Bullet>(new Bullet(tex, position, glm::normalize(velocity)));
 }
 
 void Bird::update(double deltaTime)

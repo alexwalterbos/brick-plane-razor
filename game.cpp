@@ -4,7 +4,6 @@
 #include <functional>
 #include <algorithm>
 #include <random>
-#include <list>
 #include <iostream>
 
 Game::Game()
@@ -100,7 +99,7 @@ void Game::update(double delta)
 
 	if(!bullets.empty())
 	{
-		list<unique_ptr<Bullet>>::iterator i;
+		vector<unique_ptr<Bullet>>::iterator i;
 		for(i = bullets.begin(); i != bullets.end(); ++i) 
 		{
 			(*i)->update(delta);
@@ -156,11 +155,36 @@ void Game::updateVisibility()
 
 	//Copy all visible objects to visibleObstacles
 	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
+
+	vector<unsigned int> invisibles;
+	unsigned int i;
+	for(i = 0; i < bullets.size(); i++)
+	{
+		Circle* collider = bullets[i]->getCollider();
+		if(!isCircleVisible(*collider, *world))
+		{
+			invisibles.push_back(i);
+		}
+	}
+
+	vector<unsigned int>::iterator it;
+	for(it = invisibles.end(); it != invisibles.begin(); --it)
+	{
+		bullets.erase(bullets.begin() + (*it - 1));
+		std::cout << "Erased: " + std::to_string(*it) << std::endl;
+	}
+
+	invisibles.clear();
 }
 
 bool isVisible(Rect obstacle, const Rect & worldRect)
 {
 	return Collision::intersects(obstacle, worldRect);
+}
+
+bool isCircleVisible(Circle circle, const Rect & worldRect)
+{
+	return Collision::intersects(worldRect, circle);
 }
 
 void Game::checkCollision()
@@ -193,6 +217,7 @@ void Game::handleCollision()
 	bird->reset();
 	pew = 0;
 
+	bullets.clear();
 	obstacles.clear();
 	visibleObstacles.clear();
 	generateWorld();
@@ -225,7 +250,7 @@ void Game::draw()
 	}
 	if(!bullets.empty())
 	{
-		list<unique_ptr<Bullet>>::iterator i;
+		vector<unique_ptr<Bullet>>::iterator i;
 		for(i = bullets.begin(); i != bullets.end(); ++i) 
 		{
 			(*i)->draw();
