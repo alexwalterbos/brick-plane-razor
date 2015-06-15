@@ -130,7 +130,7 @@ void Game::update(double delta)
 
 	updateVisibility();
 	updateWorldRect();
-	checkCollision();
+	//checkCollision();
 }
 
 void Game::generateWorld()
@@ -166,14 +166,14 @@ void Game::generateWorld()
 void Game::updateWorldRect()
 {
 	float birdOffset = bird->getPosition().x;
-	worldRect->min = glm::vec2(-ratio + birdOffset, -1);
-	worldRect->max = glm::vec2(ratio + birdOffset, 1);
+	float hFarHalf = -tan(fov / 2.f) * farDist;
+	worldRect->min = glm::vec2(-hFarHalf * ratio + birdOffset, -hFarHalf);
+	worldRect->max = glm::vec2(hFarHalf * ratio + birdOffset, hFarHalf);
 }
 
 void Game::updateVisibility()
 {
-	auto world = getWorldRect();
-	auto func = bind(isVisible, placeholders::_1, *world);
+	auto func = bind(isVisible, placeholders::_1, *worldRect);
 
 	//Copy all visible objects to visibleObstacles
 	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
@@ -183,7 +183,7 @@ void Game::updateVisibility()
 	while(it != bullets.end())
 	{
 		Circle collider = (*it)->getCollider();
-		if(!isCircleVisible(collider, *world))
+		if(!isCircleVisible(collider, *worldRect))
 		{
 			it = bullets.erase(it);
 		}
@@ -195,7 +195,7 @@ void Game::updateVisibility()
 	}
 }
 
-bool isVisible(Rect obstacle, const Rect & worldRect)
+bool isVisible(Rect obstacle, const Rect &worldRect)
 {
 	return Collision::intersects(obstacle, worldRect);
 }
@@ -241,24 +241,18 @@ void Game::handleCollision()
 	generateWorld();
 }
 
-unique_ptr<Rect> Game::getWorldRect()
-{
-	float birdOffset = bird->getPosition().x;
-	auto world = unique_ptr<Rect>(new Rect());
-	world->min = glm::vec2(-ratio + birdOffset, -1);
-	world->max = glm::vec2(ratio + birdOffset, 1);
-	return world;
-}
-
 void Game::draw() 
 {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	//drawBackground();
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(worldRect->min.x, worldRect->max.x, worldRect->min.y, worldRect->max.y, 0.f, -10.f);
+	glm::mat4 proj = glm::perspective(fov, ratio, nearDist, farDist);
+	proj = glm::translate(proj, -(bird->getPosition()));
+	proj = glm::translate(proj, glm::vec3(0.f, 0.f, -2.f));
+	glLoadMatrixf(glm::value_ptr(proj));
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-//	drawBackground();
 	drawHeightMap();
 
 	glPushMatrix();
@@ -286,30 +280,34 @@ glm::vec3 computeNormal(glm::vec3 const & a, glm::vec3 const & b, glm::vec3 cons
 
 void Game::drawHeightMap()
 {
+	float xSize = (worldRect->max.x - worldRect->min.x) / heightMapStepX;
+	float startX = xSize * (int)(worldRect->min.x / xSize); 
+
 	glBegin(GL_TRIANGLES);
+	glColor3f(1.f, 1.f, 1.f);
 	for(int i = 0; i < heightMapStepX; i++)
 	{
 		for(int j = 0; j < heightMapStepY; j++)
 		{
-			drawQuad(i, j);									
+			drawQuad(i, j, startX, xSize, 3.f);				
 		}
 	}
 	glEnd();
 }
 
-void Game::drawQuad(int stepX, int stepZ)
+void Game::drawQuad(int stepX, int stepZ, float startX, float xSize, float zSize)
 {
-	float startX = bird->getPosition().x;
-
-	glm::vec3 a(startX + stepX * quadSize, 0, stepZ * quadSize),
-		b(startX + (stepX + 1) * quadSize, 0, stepZ * quadSize),
-		c(startX + stepX * quadSize, 0, (stepZ + 1) * quadSize),
-		d(startX + (stepX + 1) * quadSize, 0, (stepZ + 1) * quadSize);
-
-	a.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, a.x * heightMapScale, a.z * heightMapScale);
-	b.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, b.x * heightMapScale, b.z * heightMapScale);
-	c.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, c.x * heightMapScale, c.z * heightMapScale);
-	d.y = scaled_raw_noise_2d(heightLowerBound, heightUpperBound, d.x * heightMapScale, d.z * heightMapScale);
+	glm::vec3 a(startX + stepX * xSize, yOffset, -stepZ * zSize),
+		b(startX + (stepX + 1) * xSize, yOffset, -stepZ * zSize),
+		c(startX + stepX * xSize, yOffset, -(stepZ + 1) * zSize),
+		d(startX + (stepX + 1) * xSize, yOffset, -(stepZ + 1) * zSize);
+	if(stepZ > 0)
+	{
+		a.y += scaled_raw_noise_2d(heightLowerBound, heightUpperBound, a.x * heightMapScale, a.z * heightMapScale);
+		b.y += scaled_raw_noise_2d(heightLowerBound, heightUpperBound, b.x * heightMapScale, b.z * heightMapScale);
+	}
+	c.y += scaled_raw_noise_2d(heightLowerBound, heightUpperBound, c.x * heightMapScale, c.z * heightMapScale);
+	d.y += scaled_raw_noise_2d(heightLowerBound, heightUpperBound, d.x * heightMapScale, d.z * heightMapScale);
 
 	glm::vec3 normal = computeNormal(a, b, c);
 
@@ -342,12 +340,18 @@ void Game::drawBackground()
                  GL_TEXTURE_WRAP_S, 
                  GL_REPEAT );
 	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+	float centerX = bird->getPosition().x;
 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	glBegin(GL_QUADS);
-	glTexCoord2f(worldRect->min.x, 1.f); glVertex2f(worldRect->min.x, worldRect->max.y);
-	glTexCoord2f(worldRect->max.x, 1.f); glVertex2fv(glm::value_ptr(worldRect->max));
-	glTexCoord2f(worldRect->max.x, 0.f); glVertex2f(worldRect->max.x, worldRect->min.y);
-	glTexCoord2f(worldRect->min.x, 0.f); glVertex2fv(glm::value_ptr(worldRect->min));
+	glTexCoord2f(centerX - ratio, 1.f); glVertex2f(-1.f, 1.f);
+	glTexCoord2f(centerX + ratio, 1.f); glVertex2f(1.f, 1.f);
+	glTexCoord2f(centerX + ratio, 0.f); glVertex2f(1.f, -1.f);
+	glTexCoord2f(centerX - ratio, 0.f); glVertex2f(-1.f, -1.f);
 	glEnd();
 	glEnable(GL_DEPTH_TEST);
 }
