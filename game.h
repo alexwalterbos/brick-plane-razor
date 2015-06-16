@@ -37,11 +37,13 @@ class Game
 		vector<Rect> obstacles;
 		vector<Rect> visibleObstacles;
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
-		float fov = 60.f, nearDist = 0.1f, farDist = 10.f;
+		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
 
-		int heightMapStepX = 20, heightMapStepY = 6;
-		float heightMapScale = 255.f, heightLowerBound = -1.f, heightUpperBound = 2.f, yOffset = -0.8f;
+		int heightMapStepX = 20, heightMapStepZ = 6;
+		float heightMapScale = 0.1f;
+		glm::vec3 lightDir = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
+		glm::vec4 groundColor = glm::vec4(0.5f, 0.3f, 0.1f, 1.f);
 		void draw();
 		void update(double delta);
 		void initGLObjs();
@@ -50,6 +52,7 @@ class Game
 		void drawWorld();
 		void drawObstacles();
 		void drawHeightMap();
+		glm::vec4 calculateColor(glm::vec3 normal);
 		void drawQuad(int stepX, int stepZ, float startX, float xSize, float zSize);
 		void checkCollision();
 		void handleCollision();
