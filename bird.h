@@ -5,24 +5,26 @@
 #include "tex.h"
 #include "pew.h"
 #include "bullet.h"
+#include "ammo.h"
 #include <memory>
 
 using namespace std;
 
 class Bird {
 	public:
-		Bird(const GLuint texture);
+		Bird(const GLuint texture, const vector<GLuint> texs);
 		void flap();
-		unique_ptr<Bullet> fire();
+		unique_ptr<Bullet> fire(Ammo a);
 		void update(double deltaTime);
 		void draw();
-		Circle* getCollider();
+		Circle getCollider();
 		glm::vec3 getPosition();
 		void reset();
 	private:
 		glm::vec3 position, velocity, gravity;
 		float size, lastPitch;
-		Circle* collider;
+		Circle collider;
 		const GLuint texture;
+		const vector<GLuint> bullettex;
 		void init();
 };

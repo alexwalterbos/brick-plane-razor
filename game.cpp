@@ -8,7 +8,7 @@
 
 Game::Game()
 {
-	startWindowX = 640;
+	startWindowX = 640*3;
 	startWindowY = 480;
 
 	if(!glfwInit())
@@ -40,7 +40,23 @@ void Game::initGLObjs()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	const GLuint tex = loadTextureFromFile("img/cannon.png");
-	bird = unique_ptr<Bird>(new Bird(tex));
+	vector<GLuint> texs;
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/razor" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/plane" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/brick" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	bird = unique_ptr<Bird>(new Bird(tex, texs));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
 
@@ -77,18 +93,23 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 
 	if(key == GLFW_KEY_P && action == GLFW_PRESS)
 		paused = !paused;
+	
+	if(key == GLFW_KEY_C && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::razor);
 
-	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	if(key == GLFW_KEY_V && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::plane);
+
+	if(key == GLFW_KEY_B && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::brick);
+
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS && !paused)
 		bird->flap();
-
-	if(key == GLFW_KEY_F && action == GLFW_PRESS)
-		handleFire();
 }
 
-void Game::handleFire()
+void Game::handleFire(Ammo ammo)
 {
-	// TODO handle multiple bullets.
-	bullets.push_back(bird->fire());
+	bullets.push_back(bird->fire(ammo));
 	GLuint tex = loadTextureFromFile("img/pew-text.png");
 	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
 }
@@ -156,25 +177,21 @@ void Game::updateVisibility()
 	//Copy all visible objects to visibleObstacles
 	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
 
-	vector<unsigned int> invisibles;
-	unsigned int i;
-	for(i = 0; i < bullets.size(); i++)
+	vector<unique_ptr<Bullet>>::iterator it = bullets.begin();
+
+	while(it != bullets.end())
 	{
-		Circle* collider = bullets[i]->getCollider();
-		if(!isCircleVisible(*collider, *world))
+		Circle collider = (*it)->getCollider();
+		if(!isCircleVisible(collider, *world))
 		{
-			invisibles.push_back(i);
+			it = bullets.erase(it);
 		}
-	}
+		else
+		{
+			++it;
+		}
 
-	vector<unsigned int>::iterator it;
-	for(it = invisibles.end(); it != invisibles.begin(); --it)
-	{
-		bullets.erase(bullets.begin() + (*it - 1));
-		std::cout << "Erased: " + std::to_string(*it) << std::endl;
 	}
-
-	invisibles.clear();
 }
 
 bool isVisible(Rect obstacle, const Rect & worldRect)
@@ -189,10 +206,10 @@ bool isCircleVisible(Circle circle, const Rect & worldRect)
 
 void Game::checkCollision()
 {
-	Circle* collider = bird->getCollider();
+	Circle collider = bird->getCollider();
 	
-	float top = collider->center.y + collider->radius;
-	float bottom = collider->center.y - collider->radius;
+	float top = collider.center.y + collider.radius;
+	float bottom = collider.center.y - collider.radius;
 
 	if(top > 0.9f || bottom < -0.9f)
 	{
@@ -203,7 +220,7 @@ void Game::checkCollision()
 	//Only check collision for visible obstacles	
 	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
 	{
-		if(Collision::intersects(*it, *collider)) 
+		if(Collision::intersects(*it, collider)) 
 		{
 			handleCollision();
 			return;

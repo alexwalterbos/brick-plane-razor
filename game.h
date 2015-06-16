@@ -7,6 +7,7 @@
 #include "pew.h"
 #include <memory>
 #include "col.h"
+#include "ammo.h"
 
 using namespace std;
 
@@ -51,5 +52,5 @@ class Game
 		void generateWorld();
 		void updateVisibility();
 		unique_ptr<Rect> getWorldRect();
-		void handleFire();
+		void handleFire(Ammo ammo);
 };

@@ -6,9 +6,9 @@ LFLAGS = -Wall -lglfw -lGL -lSOIL $(DEBUG)
 
 mustache-nemesis : $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o mustache-nemesis
-game.o : game.h game.cpp bird.o pew.o bullet.o col.h 
+game.o : game.h game.cpp bird.o pew.o bullet.o col.h ammo.h
 	$(CC) $(CFLAGS) game.cpp
-bird.o : bird.h bird.cpp vec.h col.h tex.o pew.o
+bird.o : bird.h bird.cpp vec.h col.h tex.o pew.o ammo.h
 	$(CC) $(CFLAGS) bird.cpp
 pew.o : pew.h pew.cpp tex.o
 	$(CC) $(CFLAGS) pew.cpp
