@@ -113,13 +113,20 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 
 void Game::handleFire(Material material)
 {
+	if(timeSinceFire < fireThreshold)
+		return;
+
 	bullets.push_back(bird->fire(material));
 	GLuint tex = loadTextureFromFile("img/pew-text.png");
 	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
+
+	timeSinceFire = 0;
 }
 
 void Game::update(double delta)
 {
+	timeSinceFire += (float) delta;
+
 	bird->update(delta);
 
 	if(!bullets.empty())

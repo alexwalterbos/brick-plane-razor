@@ -42,11 +42,13 @@ class Game
 		      obstaclesWidth = 0.2f,
 		      playDistance=100.f,
 		      obstacleHoleSize=0.7f,
-		      outsideWorldOffset = 1.5f;
+		      outsideWorldOffset = 1.5f,
+		      fireThreshold=0.33f;
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
 		float cameraOffset = 1.4f;
 		unique_ptr<Mesh> blade;
+		float timeSinceFire;
 
 		int heightMapStepX = 20, heightMapStepZ = 6;
 		float heightMapScale = 0.1f;
