@@ -153,17 +153,17 @@ void Game::updateWorld()
 		float centerPos = center(generator);
 		Material material = static_cast<Material>(rand() % 3);
 
-		float newMinX = (*worldRect).max.x + outsideWorldOffset;
+		float newMinX = worldRect->max.x + outsideWorldOffset;
 
 		Rect bottomCollider;
-		bottomCollider.min = glm::vec2(newMinX, -1.f);
+		bottomCollider.min = glm::vec2(newMinX, worldRect->min.y);
 		bottomCollider.max = glm::vec2(newMinX + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
 
 		obstacles.push_back(Obstacle(material, bottomCollider));
 	
 		Rect topCollider;
 		topCollider.min = glm::vec2(newMinX, centerPos + obstacleHoleSize/2.f);
-		topCollider.max = glm::vec2(newMinX + obstaclesWidth, 1.f);
+		topCollider.max = glm::vec2(newMinX + obstaclesWidth, worldRect->max.y);
 
 		obstacles.push_back(Obstacle(material, topCollider));
 
@@ -222,7 +222,7 @@ void Game::checkCollision()
 	float top = collider.center.y + collider.radius;
 	float bottom = collider.center.y - collider.radius;
 
-	if(top > 0.9f || bottom < -0.9f)
+	if(top > worldRect->max.y || bottom < worldRect->min.y)
 	{
 		handleCollision();
 		return;
