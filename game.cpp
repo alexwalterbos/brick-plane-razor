@@ -40,16 +40,9 @@ void Game::initGLObjs()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	wall = unique_ptr<Mesh>(new Mesh());
-	wall->loadMesh("models/wall.obj");
 	blade = unique_ptr<Mesh>(new Mesh());
 	blade->loadMesh("models/blade.obj");
-	book = unique_ptr<Mesh>(new Mesh());
-	book->loadMesh("models/book.obj");
-	
-	wallTexture = loadTextureFromFile("img/wall.jpg");
 	bladeTexture = loadTextureFromFile("img/metal.jpg");
-	bookTexture = loadTextureFromFile("img/book.jpg");
 
 	const GLuint tex = loadTextureFromFile("img/cannon.png");
 	vector<GLuint> texs;
@@ -417,6 +410,18 @@ void Game::drawObstacles()
 	for(vector<Obstacle>::iterator it = obstacles.begin(); it != obstacles.end(); ++it)
 	{
 		glPushMatrix();
+		switch(it->getMaterial())
+		{
+			case Material::razor:
+				glColor3f(0.f, 1.f, 0.f);
+				break;
+			case Material::plane:
+				glColor3f(0.f, 0.f, 1.f);
+				break;
+			case Material::brick:
+				glColor3f(1.f, 0.f, 0.f);
+				break;
+		}
 		glm::mat4 obj = glm::mat4(1);
 		if(it->isBottom()) 
 		{
@@ -429,10 +434,10 @@ void Game::drawObstacles()
 		obj = glm::rotate(obj, 90.f, glm::vec3(0.f, 1.f, 0.f));
 		obj = glm::scale(obj, glm::vec3(0.1f, (it->getRect().max.y - it->getRect().min.y) / 2.f, 0.5f));
 		glLoadMatrixf(glm::value_ptr(obj));
-		blade->drawSmooth();
+		blade->draw();
 		glPopMatrix();
-	}
-	
+	}	
+	glColor3f(1.f, 1.f, 1.f);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

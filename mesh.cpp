@@ -10,7 +10,7 @@
 Mesh::Mesh(){}
 using namespace std;
 
-void Mesh::drawSmooth()
+void Mesh::draw()
 {
 	glBegin(GL_TRIANGLES);
 	for (size_t i=0;i<vertices.size();++i)
