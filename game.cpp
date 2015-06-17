@@ -311,9 +311,15 @@ glm::vec3 computeNormal(glm::vec3 const & a, glm::vec3 const & b, glm::vec3 cons
 
 void Game::drawHeightMap()
 {
-	float xSize = (worldRect->max.x - worldRect->min.x) / heightMapStepX;
+	Rect r;
+	float birdOffset = bird->getPosition().x + cameraOffset;
+	float hFarHalf = tan(fov * PI / 360.f) * (farDist + 1);
+	r.min = glm::vec2(-hFarHalf * ratio + birdOffset, -hFarHalf);
+	r.max = glm::vec2(hFarHalf * ratio + birdOffset, hFarHalf);
+
+	float xSize = (r.max.x - r.min.x) / heightMapStepX;
 	float zSize = (farDist - nearDist) / heightMapStepZ;
-	float startX = xSize * (int)(worldRect->min.x / xSize);
+	float startX = xSize * ((int)(r.min.x / xSize) - 1);
 	
 	glBegin(GL_TRIANGLES);
 	for(int i = 0; i < heightMapStepX; i++)
