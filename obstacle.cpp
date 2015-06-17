@@ -1,9 +1,10 @@
 #include "obstacle.h"
 
-Obstacle::Obstacle(Material m, Rect r)
+Obstacle::Obstacle(Material m, Rect r, bool b)
 {
 	material = m;
 	rect = r;
+	bottom = b;
 }
 
 Material Obstacle::getMaterial()
@@ -16,3 +17,7 @@ Rect Obstacle::getRect()
 	return rect;
 }
 
+bool Obstacle::isBottom()
+{
+	return bottom;
+}

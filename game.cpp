@@ -169,13 +169,13 @@ void Game::updateWorld()
 		bottomCollider.min = glm::vec2(newMinX, worldRect->min.y);
 		bottomCollider.max = glm::vec2(newMinX + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
 
-		obstacles.push_back(Obstacle(material, bottomCollider));
+		obstacles.push_back(Obstacle(material, bottomCollider, true));
 	
 		Rect topCollider;
 		topCollider.min = glm::vec2(newMinX, centerPos + obstacleHoleSize/2.f);
 		topCollider.max = glm::vec2(newMinX + obstaclesWidth, worldRect->max.y);
 
-		obstacles.push_back(Obstacle(material, topCollider));
+		obstacles.push_back(Obstacle(material, topCollider, false));
 
 		separation -= 0.01f; //increase difficulty (slowly)
 	}
@@ -311,15 +311,6 @@ void Game::draw()
 	}
 	glPopMatrix();
 
-	glPushMatrix();
-	glColor3f(1.f, 1.f, 1.f);
-	glBindTexture(GL_TEXTURE_2D, wallTexture);
-	glm::mat4 obj = glm::scale(glm::mat4(1), glm::vec3(0.2f));
-	obj = glm::translate(obj, glm::vec3(-bird->getPosition().x, 0.f, -2.f));
-	glLoadMatrixf(glm::value_ptr(obj));
-	wall->drawSmooth();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glPopMatrix();
 
 	drawObstacles();
 }
@@ -422,44 +413,27 @@ void Game::drawBackground()
 
 void Game::drawObstacles()
 {
-	glDisable(GL_DEPTH_TEST);
-	glBegin(GL_LINES);
-	for (vector<Obstacle>::iterator it = obstacles.begin() ; it != obstacles.end(); ++it)
+	glBindTexture(GL_TEXTURE_2D, bladeTexture);
+	for(vector<Obstacle>::iterator it = obstacles.begin(); it != obstacles.end(); ++it)
 	{
-		switch(it->getMaterial())
+		glPushMatrix();
+		glm::mat4 obj = glm::mat4(1);
+		if(it->isBottom()) 
 		{
-			case Material::razor:
-				glColor3f(0.f, 1.f, 0.f);
-				break;
-			case Material::plane:
-				glColor3f(0.f, 0.f, 1.f);
-				break;
-			case Material::brick:
-				glColor3f(1.f, 0.f, 0.f);
-				break;
+			obj = glm::translate(obj, glm::vec3(it->getRect().min.x, it->getRect().min.y, 0.f));
 		}
-
-		Rect rect = it->getRect();
-		glm::vec2 a = rect.min, 
-			b = glm::vec2(rect.min.x, rect.max.y),
-			c = rect.max, 
-			d = glm::vec2(rect.max.x, rect.min.y);
-
-		glVertex2fv(glm::value_ptr(a));
-		glVertex2fv(glm::value_ptr(b));
-
-		glVertex2fv(glm::value_ptr(b));
-		glVertex2fv(glm::value_ptr(c));
-
-		glVertex2fv(glm::value_ptr(c));
-		glVertex2fv(glm::value_ptr(d));
-
-		glVertex2fv(glm::value_ptr(d));
-		glVertex2fv(glm::value_ptr(a));
+		else {
+			obj = glm::translate(obj, glm::vec3(it->getRect().min.x, it->getRect().max.y, 0.f));
+			obj = glm::rotate(obj, 180.f, glm::vec3(0.f, 0.f, 1.f));
+		}
+		obj = glm::rotate(obj, 90.f, glm::vec3(0.f, 1.f, 0.f));
+		obj = glm::scale(obj, glm::vec3(0.1f, (it->getRect().max.y - it->getRect().min.y) / 2.f, 0.5f));
+		glLoadMatrixf(glm::value_ptr(obj));
+		blade->drawSmooth();
+		glPopMatrix();
 	}
-	glColor3f(1.f, 1.f, 1.f);
-	glEnd();
-	glEnable(GL_DEPTH_TEST);
+	
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Game::play()
