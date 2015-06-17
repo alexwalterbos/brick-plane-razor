@@ -40,11 +40,12 @@ class Game
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
+		float cameraOffset = 1.4f;
 
 		int heightMapStepX = 20, heightMapStepZ = 6;
 		float heightMapScale = 0.1f;
 		glm::vec3 invLightDir = glm::normalize(glm::vec3(1.f, 1.5f, 1.f));
-		glm::vec4 groundColor = glm::vec4(0.5f, 0.3f, 0.1f, 1.f);
+		glm::vec4 groundColor = glm::vec4(0.1f, 0.8f, 0.1f, 1.f);
 		void draw();
 		void update(double delta);
 		void initGLObjs();
