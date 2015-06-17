@@ -49,7 +49,8 @@ class Game
 		float cameraOffset = 1.4f;
 		unique_ptr<Mesh> blade;
 		float timeSinceFire;
-
+		int currentScore, highScore;
+		float distanceHighScore;
 		int heightMapStepX = 20, heightMapStepZ = 6;
 		float heightMapScale = 0.1f;
 		glm::vec3 invLightDir = glm::normalize(glm::vec3(1.f, 1.5f, 1.f));
