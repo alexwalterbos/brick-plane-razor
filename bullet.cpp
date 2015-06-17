@@ -5,8 +5,6 @@
 #include <iostream>
 #include <cmath>
 
-#define PI 3.14159265
-
 Bullet::Bullet(const vector<GLuint> textures, const float scale, const Material mat, glm::vec3 pos, glm::vec3 direction):
 	scale(scale), textures(textures), material(mat)
 {

@@ -36,8 +36,12 @@ class Game
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
 		vector<Obstacle> obstacles;
-		vector<Obstacle> visibleObstacles;
-		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
+		float separation = 3.f,
+		      obstacleStartPosition=1.f,
+		      obstaclesWidth = 0.2f,
+		      playDistance=100.f,
+		      obstacleHoleSize=0.7f,
+		      outsideWorldOffset = 1.5f;
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
 		float cameraOffset = 1.4f;
@@ -51,7 +55,6 @@ class Game
 		void initGLObjs();
 		void initWindow();
 		void drawBackground();
-		void drawWorld();
 		void drawObstacles();
 		void drawHeightMap();
 		glm::vec4 calculateColor(glm::vec3 normal);
@@ -59,7 +62,7 @@ class Game
 		void checkCollision();
 		void handleCollision();
 		void updateWorldRect();
-		void generateWorld();
+		void updateWorld();
 		void updateVisibility();
 		void handleFire(Material material);
 };

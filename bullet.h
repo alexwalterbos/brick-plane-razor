@@ -5,6 +5,8 @@
 #include "col.h"
 #include "material.h"
 
+#define PI 3.14159265
+
 using namespace std;
 
 class Bullet 

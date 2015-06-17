@@ -63,7 +63,6 @@ void Game::initGLObjs()
 
 	worldRect = unique_ptr<Rect>(new Rect());
 	updateWorldRect();
-	generateWorld();
 }
 
 void Game::initWindow()
@@ -131,56 +130,64 @@ void Game::update(double delta)
 
 	updateVisibility();
 	updateWorldRect();
+	updateWorld();
 	checkCollision();
 }
 
-void Game::generateWorld()
+void Game::updateWorld()
 {	
-	//Separation between obstacles
-	float separation = startSeparation;
-	float currentPosition = obstacleStartPosition;
+	bool separationCue = true;
+
+	if(!obstacles.empty())
+	{
+		float diff = (*worldRect).max.x - obstacles.back().getRect().max.x;
+
+		separationCue = diff > (separation - outsideWorldOffset);
+	}
 
 	default_random_engine generator(random_device{}());
 	uniform_real_distribution<float> center(-0.8f, 0.8f);
 
-	while(currentPosition < playDistance)
+	if(separationCue)
 	{
 		float centerPos = center(generator);
 		Material material = static_cast<Material>(rand() % 3);
 
-		separation -= 0.01f;
-		currentPosition += separation;
+		float newMinX = (*worldRect).max.x + outsideWorldOffset;
 
 		Rect bottomCollider;
-		bottomCollider.min = glm::vec2(currentPosition, -1.f);
-		bottomCollider.max = glm::vec2(currentPosition + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
+		bottomCollider.min = glm::vec2(newMinX, -1.f);
+		bottomCollider.max = glm::vec2(newMinX + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
 
 		obstacles.push_back(Obstacle(material, bottomCollider));
 	
 		Rect topCollider;
-		topCollider.min = glm::vec2(currentPosition, centerPos + obstacleHoleSize/2.f);
-		topCollider.max = glm::vec2(currentPosition + obstaclesWidth, 1.f);
+		topCollider.min = glm::vec2(newMinX, centerPos + obstacleHoleSize/2.f);
+		topCollider.max = glm::vec2(newMinX + obstaclesWidth, 1.f);
 
 		obstacles.push_back(Obstacle(material, topCollider));
+
+		separation -= 0.01f; //increase difficulty (slowly)
+	}
+
+	vector<Obstacle>::iterator it = obstacles.begin();
+
+	while((*it).getRect().max.x < (*worldRect).min.x)
+	{
+		obstacles.erase(it);
 	}
 }
 
 void Game::updateWorldRect()
 {
-	float birdOffset = bird->getPosition().x;
-	float hFarHalf = -tan(fov / 2.f) * nearDist;
+	float birdOffset = bird->getPosition().x + cameraOffset;
+	float hFarHalf = tan(fov * PI / 360.f) * 2.f;
 	worldRect->min = glm::vec2(-hFarHalf * ratio + birdOffset, -hFarHalf);
 	worldRect->max = glm::vec2(hFarHalf * ratio + birdOffset, hFarHalf);
 }
 
 void Game::updateVisibility()
 {
-	auto func = bind(isObstacleVisible, placeholders::_1, *worldRect);
-
-	visibleObstacles.clear();
-	//Copy all visible objects to visibleObstacles
-	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
-
 	vector<unique_ptr<Bullet>>::iterator it = bullets.begin();
 
 	while(it != bullets.end())
@@ -221,8 +228,7 @@ void Game::checkCollision()
 		return;
 	}
 
-	//Only check collision for visible obstacles	
-	for (vector<Obstacle>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	for (vector<Obstacle>::iterator it = obstacles.begin() ; it != obstacles.end(); ++it)
 	{
 		if(Collision::intersects(it->getRect(), collider)) 
 		{
@@ -264,8 +270,6 @@ void Game::handleCollision()
 
 	bullets.clear();
 	obstacles.clear();
-	visibleObstacles.clear();
-	generateWorld();
 }
 
 void Game::draw() 
@@ -275,7 +279,7 @@ void Game::draw()
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
 	glm::mat4 proj = glm::perspective(fov, ratio, nearDist, farDist);
-	proj = glm::translate(proj, glm::vec3(-bird->getPosition().x - cameraOffset, 0.f, 0.f));
+	proj = glm::translate(proj, glm::vec3(-bird->getPosition().x - cameraOffset, 0.f, 0.f)); 
 	proj = glm::translate(proj, glm::vec3(0.f, 0.f, -2.f));
 	glLoadMatrixf(glm::value_ptr(proj));
         glMatrixMode(GL_MODELVIEW);
@@ -309,7 +313,7 @@ void Game::drawHeightMap()
 {
 	float xSize = (worldRect->max.x - worldRect->min.x) / heightMapStepX;
 	float zSize = (farDist - nearDist) / heightMapStepZ;
-	float startX = xSize * (int)(worldRect->min.x / xSize) + cameraOffset;
+	float startX = xSize * (int)(worldRect->min.x / xSize);
 	
 	glBegin(GL_TRIANGLES);
 	for(int i = 0; i < heightMapStepX; i++)
@@ -394,7 +398,7 @@ void Game::drawObstacles()
 {
 	glDisable(GL_DEPTH_TEST);
 	glBegin(GL_LINES);
-	for (vector<Obstacle>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	for (vector<Obstacle>::iterator it = obstacles.begin() ; it != obstacles.end(); ++it)
 	{
 		switch(it->getMaterial())
 		{
