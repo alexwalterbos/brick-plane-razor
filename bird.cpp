@@ -8,8 +8,8 @@
 
 #define PI 3.14159265
 
-Bird::Bird(const GLuint texture):
-	texture(texture)
+Bird::Bird(const GLuint texture, const vector<GLuint> texs):
+	texture(texture), bullettex(texs)
 {
 	init();
 }
@@ -19,28 +19,41 @@ void Bird::init()
 	velocity = glm::vec3(1.5f, 0.f, 0.f);
 	gravity = glm::vec3(0.f, -2.5f, 0.f);
 
-	collider = new Circle();
-	collider->center = glm::vec2(position.x, position.y);
-	collider->radius = 0.1f;
+	collider = Circle();
+	collider.center = glm::vec2(position.x, position.y);
+	collider.radius = 0.1f;
 
 }
 
 void Bird::flap()
 {
-	velocity.y=1.5f;
+	velocity.y+=2.5f;
+	if(velocity.y > 2.0f) {
+		velocity.y = 2.0f;
+	}
 }
 
-unique_ptr<Pew> Bird::fire()
+unique_ptr<Bullet> Bird::fire(Ammo ammo)
 {
-	const GLuint tex = loadTextureFromFile("img/pew-text.png");
-	return unique_ptr<Pew>(new Pew(tex, position));
+	vector<GLuint> sub(bullettex.begin() + 8*ammo, bullettex.end() + 8*ammo + 8);
+	float scale = 0.12f;
+	switch(ammo){
+		case Ammo::razor:
+			break;
+		case Ammo::brick:
+			break;
+		case Ammo::plane:
+			scale *= 2.f;
+			break;
+	}
+	return unique_ptr<Bullet>(new Bullet(sub, position, glm::normalize(velocity), scale));
 }
 
 void Bird::update(double deltaTime)
 {
 	velocity += gravity * (float) deltaTime;
 	position += velocity * (float)deltaTime;
-	collider->center = glm::vec2(position.x, position.y);
+	collider.center = glm::vec2(position.x, position.y);
 }
 
 void Bird::draw()
@@ -83,7 +96,7 @@ glm::vec3 Bird::getPosition()
 	return position;
 }
 
-Circle* Bird::getCollider()
+Circle Bird::getCollider()
 {
 	return collider;
 }

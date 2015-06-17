@@ -4,10 +4,11 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+#include <iostream>
 
 Game::Game()
 {
-	startWindowX = 640;
+	startWindowX = 640*3;
 	startWindowY = 480;
 
 	if(!glfwInit())
@@ -39,7 +40,23 @@ void Game::initGLObjs()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	const GLuint tex = loadTextureFromFile("img/cannon.png");
-	bird = unique_ptr<Bird>(new Bird(tex));
+	vector<GLuint> texs;
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/razor" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/plane" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	for(int i = 0; i < 8; i++)
+	{
+		auto s = "img/brick" + to_string(i) + ".png";
+		texs.push_back(loadTextureFromFile(s.c_str()));
+	}
+	bird = unique_ptr<Bird>(new Bird(tex, texs));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
 
@@ -71,22 +88,44 @@ void Game::resizeCallback(GLFWwindow* window, int width, int height)
 
 void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         	glfwSetWindowShouldClose(window, GL_TRUE);
 
 	if(key == GLFW_KEY_P && action == GLFW_PRESS)
 		paused = !paused;
+	
+	if(key == GLFW_KEY_C && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::razor);
 
-	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	if(key == GLFW_KEY_V && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::plane);
+
+	if(key == GLFW_KEY_B && action == GLFW_PRESS && !paused)
+		handleFire(Ammo::brick);
+
+	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS && !paused)
 		bird->flap();
+}
 
-	if(key == GLFW_KEY_F && action == GLFW_PRESS)
-		lastPew = bird->fire();
+void Game::handleFire(Ammo ammo)
+{
+	bullets.push_back(bird->fire(ammo));
+	GLuint tex = loadTextureFromFile("img/pew-text.png");
+	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
 }
 
 void Game::update(double delta)
 {
 	bird->update(delta);
+
+	if(!bullets.empty())
+	{
+		vector<unique_ptr<Bullet>>::iterator i;
+		for(i = bullets.begin(); i != bullets.end(); ++i) 
+		{
+			(*i)->update(delta);
+		}
+	}
 
 	updateVisibility();
 	updateWorldRect();
@@ -137,6 +176,22 @@ void Game::updateVisibility()
 
 	//Copy all visible objects to visibleObstacles
 	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
+
+	vector<unique_ptr<Bullet>>::iterator it = bullets.begin();
+
+	while(it != bullets.end())
+	{
+		Circle collider = (*it)->getCollider();
+		if(!isCircleVisible(collider, *world))
+		{
+			it = bullets.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+
+	}
 }
 
 bool isVisible(Rect obstacle, const Rect & worldRect)
@@ -144,12 +199,17 @@ bool isVisible(Rect obstacle, const Rect & worldRect)
 	return Collision::intersects(obstacle, worldRect);
 }
 
+bool isCircleVisible(Circle circle, const Rect & worldRect)
+{
+	return Collision::intersects(worldRect, circle);
+}
+
 void Game::checkCollision()
 {
-	Circle* collider = bird->getCollider();
+	Circle collider = bird->getCollider();
 	
-	float top = collider->center.y + collider->radius;
-	float bottom = collider->center.y - collider->radius;
+	float top = collider.center.y + collider.radius;
+	float bottom = collider.center.y - collider.radius;
 
 	if(top > 0.9f || bottom < -0.9f)
 	{
@@ -160,7 +220,7 @@ void Game::checkCollision()
 	//Only check collision for visible obstacles	
 	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
 	{
-		if(Collision::intersects(*it, *collider)) 
+		if(Collision::intersects(*it, collider)) 
 		{
 			handleCollision();
 			return;
@@ -172,8 +232,9 @@ void Game::handleCollision()
 {
 	//TODO show replay screen?
 	bird->reset();
-	lastPew = 0;
+	pew = 0;
 
+	bullets.clear();
 	obstacles.clear();
 	visibleObstacles.clear();
 	generateWorld();
@@ -201,8 +262,16 @@ void Game::draw()
 	
 	glPushMatrix();
 	bird->draw();
-	if(lastPew != 0){
-		lastPew->draw();
+	if(pew != 0){
+		pew->draw();
+	}
+	if(!bullets.empty())
+	{
+		vector<unique_ptr<Bullet>>::iterator i;
+		for(i = bullets.begin(); i != bullets.end(); ++i) 
+		{
+			(*i)->draw();
+		}
 	}
 	glPopMatrix();
 
