@@ -117,8 +117,6 @@ void Game::handleFire(Material material)
 		return;
 
 	bullets.push_back(bird->fire(material));
-	GLuint tex = loadTextureFromFile("img/pew-text.png");
-	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
 
 	timeSinceFire = 0;
 }
@@ -281,7 +279,6 @@ void Game::handleCollision()
 		distanceHighScore = bird->getPosition().x;
 	
 	bird->reset();
-	pew = 0;
 
 	bullets.clear();
 	obstacles.clear();
@@ -307,9 +304,6 @@ void Game::draw()
 
 	glPushMatrix();
 	bird->draw();
-	if(pew != 0){
-		pew->draw();
-	}
 	if(!bullets.empty())
 	{
 		vector<unique_ptr<Bullet>>::iterator i;
