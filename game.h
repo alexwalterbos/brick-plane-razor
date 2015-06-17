@@ -7,11 +7,12 @@
 #include "pew.h"
 #include <memory>
 #include "col.h"
-#include "ammo.h"
+#include "material.h"
+#include "obstacle.h"
 
 using namespace std;
 
-bool isVisible(Rect obstacle, const Rect & worldRect);
+bool isObstacleVisible(Obstacle obstacle, const Rect & worldRect);
 bool isCircleVisible(Circle circle, const Rect & worldRect);
 
 class Game
@@ -34,8 +35,8 @@ class Game
 		unique_ptr<Pew> pew;
 		unique_ptr<Bird> bird;
 		unique_ptr<Rect> worldRect;
-		vector<Rect> obstacles;
-		vector<Rect> visibleObstacles;
+		vector<Obstacle> obstacles;
+		vector<Obstacle> visibleObstacles;
 		float startSeparation = 3.f, obstacleStartPosition=1.f, obstaclesWidth = 0.2f, playDistance=100.f, obstacleHoleSize=0.7f;
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
@@ -59,6 +60,5 @@ class Game
 		void updateWorldRect();
 		void generateWorld();
 		void updateVisibility();
-		unique_ptr<Rect> getWorldRect();
-		void handleFire(Ammo ammo);
+		void handleFire(Material material);
 };

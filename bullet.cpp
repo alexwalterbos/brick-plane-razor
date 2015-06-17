@@ -7,8 +7,8 @@
 
 #define PI 3.14159265
 
-Bullet::Bullet(const vector<GLuint> textures, glm::vec3 pos, glm::vec3 direction, const float scale):
-	scale(scale), textures(textures)
+Bullet::Bullet(const vector<GLuint> textures, const float scale, const Material mat, glm::vec3 pos, glm::vec3 direction):
+	scale(scale), textures(textures), material(mat)
 {
 	position = pos;
 	velocity = direction * 5.f;
@@ -62,3 +62,7 @@ glm::vec3 Bullet::getPosition()
 	return position;
 }
 
+Material Bullet::getMaterial()
+{
+	return material;
+}

@@ -5,7 +5,7 @@
 #include "tex.h"
 #include "pew.h"
 #include "bullet.h"
-#include "ammo.h"
+#include "material.h"
 #include <memory>
 
 using namespace std;
@@ -14,7 +14,7 @@ class Bird {
 	public:
 		Bird(const GLuint texture, const vector<GLuint> texs);
 		void flap();
-		unique_ptr<Bullet> fire(Ammo a);
+		unique_ptr<Bullet> fire(Material a);
 		void update(double deltaTime);
 		void draw();
 		Circle getCollider();

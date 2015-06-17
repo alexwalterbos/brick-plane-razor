@@ -1,6 +1,6 @@
 #pragma once 
 
-enum Ammo 
+enum Material 
 {
 	razor = 0,
 	plane = 1,
