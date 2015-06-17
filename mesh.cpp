@@ -1,6 +1,7 @@
 #include "mesh.h"
 #include <GL/glut.h>
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -8,7 +9,6 @@
 #include "glm/ext.hpp"
 
 Mesh::Mesh(){}
-using namespace std;
 
 void Mesh::draw()
 {
