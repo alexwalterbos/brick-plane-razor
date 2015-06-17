@@ -319,7 +319,7 @@ void Game::drawHeightMap()
 
 	float xSize = (r.max.x - r.min.x) / heightMapStepX;
 	float zSize = (farDist - nearDist) / heightMapStepZ;
-	float startX = xSize * ((int)(r.min.x / xSize) - 1);
+	float startX = xSize * (int)(r.min.x / xSize);
 	
 	glBegin(GL_TRIANGLES);
 	for(int i = 0; i < heightMapStepX; i++)
