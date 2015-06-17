@@ -12,16 +12,13 @@ using namespace std;
 
 void Mesh::drawSmooth()
 {
-
-	glBegin(GL_LINES);
-	for (size_t i=0;i<triangles.size();++i)
+	glBegin(GL_TRIANGLES);
+	for (size_t i=0;i<vertices.size();++i)
 	{
-		for(int v = 0; v < 3 ; v++){
-			Vertex vert = vertices[triangles[i].v[v]];
-			glVertex3fv(glm::value_ptr(vert.p));
-			glNormal3fv(glm::value_ptr(vert.n));
-			glTexCoord2f(vert.t.x, vert.t.y);
-		}
+		Vertex vert = vertices[i];
+		glVertex3fv(glm::value_ptr(vert.p));
+		glNormal3fv(glm::value_ptr(vert.n));
+		glTexCoord2f(vert.t.x, vert.t.y);
 	}
 	glEnd();
 }
@@ -72,14 +69,12 @@ bool Mesh::loadMesh(const char * filename)
 				return false;
 			}
 		
-			int indices [3] = {}; 
 			for(size_t i = 0; i < 3; ++i) 
 			{
-				vertices.push_back(Vertex(temp_vertices[vertexIndex[i]-1], temp_normals[normalIndex[i]-1], temp_uvs[uvIndex[i]-1]));
-				indices[i] = vertices.size() - 1;
+				Vertex vert = Vertex(temp_vertices[vertexIndex[i]-1], temp_normals[normalIndex[i]-1], temp_uvs[uvIndex[i]-1]);
+				vertices.push_back(vert);
 			}
 
-			triangles.push_back(Triangle(indices[0], indices[1], indices[2]));
 		}
 	}
 	

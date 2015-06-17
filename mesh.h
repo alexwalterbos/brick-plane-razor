@@ -38,9 +38,8 @@ class Triangle {
 class Mesh {
 	public:
 		Mesh();
-		inline Mesh (const std::vector<Vertex> & v, const std::vector<Triangle> & t) : vertices (v), triangles (t)  {}
+		inline Mesh (const std::vector<Vertex> & v) : vertices (v)  {}
 		std::vector<Vertex> vertices;
-		std::vector<Triangle> triangles;
 
 		bool loadMesh(const char * filename);
 		void drawSmooth();

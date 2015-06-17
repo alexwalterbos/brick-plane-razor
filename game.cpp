@@ -40,6 +40,17 @@ void Game::initGLObjs()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+	wall = unique_ptr<Mesh>(new Mesh());
+	wall->loadMesh("models/wall.obj");
+	blade = unique_ptr<Mesh>(new Mesh());
+	blade->loadMesh("models/blade.obj");
+	book = unique_ptr<Mesh>(new Mesh());
+	book->loadMesh("models/book.obj");
+	
+	wallTexture = loadTextureFromFile("img/wall.jpg");
+	bladeTexture = loadTextureFromFile("img/metal.jpg");
+	bookTexture = loadTextureFromFile("img/book.jpg");
+
 	const GLuint tex = loadTextureFromFile("img/cannon.png");
 	vector<GLuint> texs;
 	for(int i = 0; i < 8; i++)
@@ -62,11 +73,6 @@ void Game::initGLObjs()
 	backgroundTexture = loadTextureFromFile("img/background.png");
 	worldRect = unique_ptr<Rect>(new Rect());
 	updateWorldRect();
-	generateWorld();
-	
-	wall = unique_ptr<Mesh>(new Mesh());
-	wall->loadMesh("models/wall.obj");
-	wallTexture = loadTextureFromFile("img/wall.jpg");
 }
 
 void Game::initWindow()
@@ -306,9 +312,9 @@ void Game::draw()
 	glPopMatrix();
 
 	glPushMatrix();
+	glColor3f(1.f, 1.f, 1.f);
 	glBindTexture(GL_TEXTURE_2D, wallTexture);
-	glm::mat4 obj = glm::scale(glm::mat4(1), glm::vec3(0.1f));
-	obj = glm::rotate(obj, 45.f, glm::vec3(1.f, 0.f, 0.f));
+	glm::mat4 obj = glm::scale(glm::mat4(1), glm::vec3(0.2f));
 	obj = glm::translate(obj, glm::vec3(-bird->getPosition().x, 0.f, -2.f));
 	glLoadMatrixf(glm::value_ptr(obj));
 	wall->drawSmooth();

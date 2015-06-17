@@ -29,7 +29,7 @@ class Game
 		void resizeCallback(GLFWwindow* window, int width, int height);
 	private:
 		float ratio;
-		GLuint backgroundTexture, wallTexture;
+		GLuint backgroundTexture, wallTexture, bladeTexture, bookTexture;
 		double lastFrameTime;
 		bool paused = false;
 		int startWindowX, startWindowY;
@@ -47,7 +47,7 @@ class Game
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
 		float cameraOffset = 1.4f;
-		unique_ptr<Mesh> wall;
+		unique_ptr<Mesh> wall, blade, book;
 
 		int heightMapStepX = 20, heightMapStepZ = 6;
 		float heightMapScale = 0.1f;
