@@ -1,5 +1,4 @@
 #include "bird.h"
-#include "pew.h"
 #include <GLFW/glfw3.h>
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
