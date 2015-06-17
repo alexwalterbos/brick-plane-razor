@@ -9,8 +9,8 @@
 
 Game::Game()
 {
-	startWindowX = 640*3;
-	startWindowY = 480;
+	startWindowX = 1920;
+	startWindowY = 1080;
 
 	if(!glfwInit())
 		throw "Failed to load glfw context!";
@@ -68,7 +68,8 @@ void Game::initGLObjs()
 
 void Game::initWindow()
 {
-	window = glfwCreateWindow(startWindowX, startWindowY, "Mustache Nemesis", NULL, NULL);
+	const GLFWvidmode *vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	window = glfwCreateWindow(vidmode->width, vidmode->height, "Mustache Nemesis", glfwGetPrimaryMonitor(), NULL);
 	if(!window)
 	{
 		glfwTerminate();
@@ -147,6 +148,9 @@ void Game::generateWorld()
 		float centerPos = center(generator);
 		Material material = static_cast<Material>(rand() % 3);
 
+		separation -= 0.01f;
+		currentPosition += separation;
+
 		Rect bottomCollider;
 		bottomCollider.min = glm::vec2(currentPosition, -1.f);
 		bottomCollider.max = glm::vec2(currentPosition + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
@@ -158,9 +162,6 @@ void Game::generateWorld()
 		topCollider.max = glm::vec2(currentPosition + obstaclesWidth, 1.f);
 
 		obstacles.push_back(Obstacle(material, topCollider));
-
-		currentPosition += separation;
-		separation -= 0.01f;
 	}
 }
 
@@ -274,7 +275,7 @@ void Game::draw()
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
 	glm::mat4 proj = glm::perspective(fov, ratio, nearDist, farDist);
-	proj = glm::translate(proj, glm::vec3(-bird->getPosition().x, 0.f, 0.f));
+	proj = glm::translate(proj, glm::vec3(-bird->getPosition().x - cameraOffset, 0.f, 0.f));
 	proj = glm::translate(proj, glm::vec3(0.f, 0.f, -2.f));
 	glLoadMatrixf(glm::value_ptr(proj));
         glMatrixMode(GL_MODELVIEW);
@@ -308,7 +309,7 @@ void Game::drawHeightMap()
 {
 	float xSize = (worldRect->max.x - worldRect->min.x) / heightMapStepX;
 	float zSize = (farDist - nearDist) / heightMapStepZ;
-	float startX = xSize * (int)(worldRect->min.x / xSize); 
+	float startX = xSize * (int)(worldRect->min.x / xSize) + cameraOffset;
 	
 	glBegin(GL_TRIANGLES);
 	for(int i = 0; i < heightMapStepX; i++)
