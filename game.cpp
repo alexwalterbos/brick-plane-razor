@@ -60,9 +60,13 @@ void Game::initGLObjs()
 	bird = unique_ptr<Bird>(new Bird(tex, texs));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
-
 	worldRect = unique_ptr<Rect>(new Rect());
 	updateWorldRect();
+	generateWorld();
+	
+	wall = unique_ptr<Mesh>(new Mesh());
+	wall->loadMesh("models/wall.obj");
+	wallTexture = loadTextureFromFile("img/wall.jpg");
 }
 
 void Game::initWindow()
@@ -301,6 +305,16 @@ void Game::draw()
 	}
 	glPopMatrix();
 
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, wallTexture);
+	glm::mat4 obj = glm::scale(glm::mat4(1), glm::vec3(0.1f));
+	obj = glm::rotate(obj, 45.f, glm::vec3(1.f, 0.f, 0.f));
+	obj = glm::translate(obj, glm::vec3(-bird->getPosition().x, 0.f, -2.f));
+	glLoadMatrixf(glm::value_ptr(obj));
+	wall->drawSmooth();
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glPopMatrix();
+
 	drawObstacles();
 }
 
@@ -376,13 +390,13 @@ void Game::drawQuad(int stepX, int stepZ, float startX, float xSize, float zSize
 void Game::drawBackground()
 {
 	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 	glTexParameteri( GL_TEXTURE_2D, 
                  GL_TEXTURE_WRAP_T, 
                  GL_REPEAT );	
 	glTexParameteri( GL_TEXTURE_2D, 
                  GL_TEXTURE_WRAP_S, 
                  GL_REPEAT );
-	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 	float xOffset = bird->getPosition().x * 0.1f;
 
 	glMatrixMode(GL_PROJECTION);
