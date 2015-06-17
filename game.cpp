@@ -40,6 +40,10 @@ void Game::initGLObjs()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+	blade = unique_ptr<Mesh>(new Mesh());
+	blade->loadMesh("models/blade.obj");
+	bladeTexture = loadTextureFromFile("img/metal.jpg");
+
 	const GLuint tex = loadTextureFromFile("img/cannon.png");
 	vector<GLuint> texs;
 	for(int i = 0; i < 8; i++)
@@ -60,7 +64,6 @@ void Game::initGLObjs()
 	bird = unique_ptr<Bird>(new Bird(tex, texs));
 
 	backgroundTexture = loadTextureFromFile("img/background.png");
-
 	worldRect = unique_ptr<Rect>(new Rect());
 	updateWorldRect();
 }
@@ -159,13 +162,13 @@ void Game::updateWorld()
 		bottomCollider.min = glm::vec2(newMinX, worldRect->min.y);
 		bottomCollider.max = glm::vec2(newMinX + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
 
-		obstacles.push_back(Obstacle(material, bottomCollider));
+		obstacles.push_back(Obstacle(material, bottomCollider, true));
 	
 		Rect topCollider;
 		topCollider.min = glm::vec2(newMinX, centerPos + obstacleHoleSize/2.f);
 		topCollider.max = glm::vec2(newMinX + obstaclesWidth, worldRect->max.y);
 
-		obstacles.push_back(Obstacle(material, topCollider));
+		obstacles.push_back(Obstacle(material, topCollider, false));
 
 		separation -= 0.01f; //increase difficulty (slowly)
 	}
@@ -301,6 +304,7 @@ void Game::draw()
 	}
 	glPopMatrix();
 
+
 	drawObstacles();
 }
 
@@ -376,13 +380,13 @@ void Game::drawQuad(int stepX, int stepZ, float startX, float xSize, float zSize
 void Game::drawBackground()
 {
 	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 	glTexParameteri( GL_TEXTURE_2D, 
                  GL_TEXTURE_WRAP_T, 
                  GL_REPEAT );	
 	glTexParameteri( GL_TEXTURE_2D, 
                  GL_TEXTURE_WRAP_S, 
                  GL_REPEAT );
-	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 	float xOffset = bird->getPosition().x * 0.1f;
 
 	glMatrixMode(GL_PROJECTION);
@@ -402,10 +406,10 @@ void Game::drawBackground()
 
 void Game::drawObstacles()
 {
-	glDisable(GL_DEPTH_TEST);
-	glBegin(GL_LINES);
-	for (vector<Obstacle>::iterator it = obstacles.begin() ; it != obstacles.end(); ++it)
+	glBindTexture(GL_TEXTURE_2D, bladeTexture);
+	for(vector<Obstacle>::iterator it = obstacles.begin(); it != obstacles.end(); ++it)
 	{
+		glPushMatrix();
 		switch(it->getMaterial())
 		{
 			case Material::razor:
@@ -418,28 +422,23 @@ void Game::drawObstacles()
 				glColor3f(1.f, 0.f, 0.f);
 				break;
 		}
-
-		Rect rect = it->getRect();
-		glm::vec2 a = rect.min, 
-			b = glm::vec2(rect.min.x, rect.max.y),
-			c = rect.max, 
-			d = glm::vec2(rect.max.x, rect.min.y);
-
-		glVertex2fv(glm::value_ptr(a));
-		glVertex2fv(glm::value_ptr(b));
-
-		glVertex2fv(glm::value_ptr(b));
-		glVertex2fv(glm::value_ptr(c));
-
-		glVertex2fv(glm::value_ptr(c));
-		glVertex2fv(glm::value_ptr(d));
-
-		glVertex2fv(glm::value_ptr(d));
-		glVertex2fv(glm::value_ptr(a));
-	}
+		glm::mat4 obj = glm::mat4(1);
+		if(it->isBottom()) 
+		{
+			obj = glm::translate(obj, glm::vec3(it->getRect().min.x, it->getRect().min.y, 0.f));
+		}
+		else {
+			obj = glm::translate(obj, glm::vec3(it->getRect().min.x, it->getRect().max.y, 0.f));
+			obj = glm::rotate(obj, 180.f, glm::vec3(0.f, 0.f, 1.f));
+		}
+		obj = glm::rotate(obj, 90.f, glm::vec3(0.f, 1.f, 0.f));
+		obj = glm::scale(obj, glm::vec3(0.1f, (it->getRect().max.y - it->getRect().min.y) / 2.f, 0.5f));
+		glLoadMatrixf(glm::value_ptr(obj));
+		blade->draw();
+		glPopMatrix();
+	}	
 	glColor3f(1.f, 1.f, 1.f);
-	glEnd();
-	glEnable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Game::play()

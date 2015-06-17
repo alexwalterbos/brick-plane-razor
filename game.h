@@ -9,6 +9,7 @@
 #include "col.h"
 #include "material.h"
 #include "obstacle.h"
+#include "mesh.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ class Game
 		void resizeCallback(GLFWwindow* window, int width, int height);
 	private:
 		float ratio;
-		GLuint backgroundTexture;
+		GLuint backgroundTexture, bladeTexture;
 		double lastFrameTime;
 		bool paused = false;
 		int startWindowX, startWindowY;
@@ -45,6 +46,7 @@ class Game
 		float fov = 60.f, nearDist = 1.f, farDist = 10.f;
 		vector<unique_ptr<Bullet>> bullets;
 		float cameraOffset = 1.4f;
+		unique_ptr<Mesh> blade;
 
 		int heightMapStepX = 20, heightMapStepZ = 6;
 		float heightMapScale = 0.1f;
