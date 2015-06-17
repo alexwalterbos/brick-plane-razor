@@ -275,7 +275,7 @@ void Game::draw()
 
 glm::vec3 computeNormal(glm::vec3 const & a, glm::vec3 const & b, glm::vec3 const & c)
 {
-	return glm::normalize(glm::cross(c - a, b - a));
+	return glm::normalize(glm::cross(b - a, c - a));
 }
 
 void Game::drawHeightMap()
@@ -285,7 +285,6 @@ void Game::drawHeightMap()
 	float startX = xSize * (int)(worldRect->min.x / xSize); 
 	
 	glBegin(GL_TRIANGLES);
-	glColor3f(1.f, 1.f, 1.f);
 	for(int i = 0; i < heightMapStepX; i++)
 	{
 		for(int j = 0; j < heightMapStepZ; j++)
@@ -293,12 +292,12 @@ void Game::drawHeightMap()
 			drawQuad(i, j, startX, xSize, zSize);				
 		}
 	}
-	glColor4f(1.f, 1.f, 1.f, 1.f);
+	glColor3f(1.f, 1.f, 1.f);
 	glEnd();
 }
 glm::vec4 Game::calculateColor(glm::vec3 normal) 
 {
-	float intensity = glm::dot(normal, lightDir);
+	float intensity = glm::dot(normal, invLightDir);
 	return groundColor * intensity;
 }
 
