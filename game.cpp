@@ -96,21 +96,21 @@ void Game::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		paused = !paused;
 	
 	if(key == GLFW_KEY_C && action == GLFW_PRESS && !paused)
-		handleFire(Ammo::razor);
+		handleFire(Material::razor);
 
 	if(key == GLFW_KEY_V && action == GLFW_PRESS && !paused)
-		handleFire(Ammo::plane);
+		handleFire(Material::plane);
 
 	if(key == GLFW_KEY_B && action == GLFW_PRESS && !paused)
-		handleFire(Ammo::brick);
+		handleFire(Material::brick);
 
 	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS && !paused)
 		bird->flap();
 }
 
-void Game::handleFire(Ammo ammo)
+void Game::handleFire(Material material)
 {
-	bullets.push_back(bird->fire(ammo));
+	bullets.push_back(bird->fire(material));
 	GLuint tex = loadTextureFromFile("img/pew-text.png");
 	pew = unique_ptr<Pew>(new Pew(tex, bird->getPosition()));
 }
@@ -145,18 +145,19 @@ void Game::generateWorld()
 	while(currentPosition < playDistance)
 	{
 		float centerPos = center(generator);
+		Material material = static_cast<Material>(rand() % 3);
 
 		Rect bottomCollider;
 		bottomCollider.min = glm::vec2(currentPosition, -1.f);
 		bottomCollider.max = glm::vec2(currentPosition + obstaclesWidth, centerPos - obstacleHoleSize/2.f);
 
-		obstacles.push_back(bottomCollider);
+		obstacles.push_back(Obstacle(material, bottomCollider));
 	
 		Rect topCollider;
 		topCollider.min = glm::vec2(currentPosition, centerPos + obstacleHoleSize/2.f);
 		topCollider.max = glm::vec2(currentPosition + obstaclesWidth, 1.f);
 
-		obstacles.push_back(topCollider);
+		obstacles.push_back(Obstacle(material, topCollider));
 
 		currentPosition += separation;
 		separation -= 0.01f;
@@ -173,8 +174,9 @@ void Game::updateWorldRect()
 
 void Game::updateVisibility()
 {
-	auto func = bind(isVisible, placeholders::_1, *worldRect);
+	auto func = bind(isObstacleVisible, placeholders::_1, *worldRect);
 
+	visibleObstacles.clear();
 	//Copy all visible objects to visibleObstacles
 	copy_if(obstacles.begin(), obstacles.end(), back_inserter(visibleObstacles), func);
 
@@ -195,9 +197,9 @@ void Game::updateVisibility()
 	}
 }
 
-bool isVisible(Rect obstacle, const Rect &worldRect)
+bool isObstacleVisible(Obstacle obstacle, const Rect & worldRect)
 {
-	return Collision::intersects(obstacle, worldRect);
+	return Collision::intersects(obstacle.getRect(), worldRect);
 }
 
 bool isCircleVisible(Circle circle, const Rect & worldRect)
@@ -219,13 +221,37 @@ void Game::checkCollision()
 	}
 
 	//Only check collision for visible obstacles	
-	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	for (vector<Obstacle>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
 	{
-		if(Collision::intersects(*it, collider)) 
+		if(Collision::intersects(it->getRect(), collider)) 
 		{
 			handleCollision();
 			return;
 		}
+	}
+
+	vector<unique_ptr<Bullet>>::iterator bit = bullets.begin();
+	while(bit != bullets.end())
+	{
+		bool collision;
+		vector<Obstacle>::iterator oit = obstacles.begin();
+		while(oit != obstacles.end())
+		{
+			collision = false;
+			if(Collision::intersects(oit->getRect(), (*bit)->getCollider()))
+			{
+				if(winsOf((*bit)->getMaterial(), oit->getMaterial()))
+					obstacles.erase(oit);
+				bullets.erase(bit);
+				collision = true;
+				break;
+			}
+			else
+				++oit;
+		}
+
+		if(!collision)
+			++bit;
 	}
 }
 
@@ -367,13 +393,26 @@ void Game::drawObstacles()
 {
 	glDisable(GL_DEPTH_TEST);
 	glBegin(GL_LINES);
-	glColor3f(1.f, 0.f, 0.f);
-	for (vector<Rect>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
+	for (vector<Obstacle>::iterator it = visibleObstacles.begin() ; it != visibleObstacles.end(); ++it)
 	{
-		glm::vec2 a = it->min, 
-			b = glm::vec2(it->min.x, it->max.y),
-			c = it->max, 
-			d = glm::vec2(it->max.x, it->min.y);
+		switch(it->getMaterial())
+		{
+			case Material::razor:
+				glColor3f(0.f, 1.f, 0.f);
+				break;
+			case Material::plane:
+				glColor3f(0.f, 0.f, 1.f);
+				break;
+			case Material::brick:
+				glColor3f(1.f, 0.f, 0.f);
+				break;
+		}
+
+		Rect rect = it->getRect();
+		glm::vec2 a = rect.min, 
+			b = glm::vec2(rect.min.x, rect.max.y),
+			c = rect.max, 
+			d = glm::vec2(rect.max.x, rect.min.y);
 
 		glVertex2fv(glm::value_ptr(a));
 		glVertex2fv(glm::value_ptr(b));

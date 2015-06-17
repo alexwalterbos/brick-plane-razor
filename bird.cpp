@@ -33,20 +33,20 @@ void Bird::flap()
 	}
 }
 
-unique_ptr<Bullet> Bird::fire(Ammo ammo)
+unique_ptr<Bullet> Bird::fire(Material material)
 {
-	vector<GLuint> sub(bullettex.begin() + 8*ammo, bullettex.end() + 8*ammo + 8);
+	vector<GLuint> sub(bullettex.begin() + 8*material, bullettex.end() + 8*material + 8);
 	float scale = 0.12f;
-	switch(ammo){
-		case Ammo::razor:
+	switch(material){
+		case Material::razor:
 			break;
-		case Ammo::brick:
+		case Material::brick:
 			break;
-		case Ammo::plane:
+		case Material::plane:
 			scale *= 2.f;
 			break;
 	}
-	return unique_ptr<Bullet>(new Bullet(sub, position, glm::normalize(velocity), scale));
+	return unique_ptr<Bullet>(new Bullet(sub, scale, material, position, glm::normalize(velocity)));
 }
 
 void Bird::update(double deltaTime)
