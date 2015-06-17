@@ -4,7 +4,8 @@ The epic battle of a small cannon against an insurmountable force of razors. Get
 
 ##Running mustache-nemesis
 
-Running mustache-nemesis can be done by executing `./build.sh`. This requires the libraries `SOIL` and `glfw` to be installed. This can be done using your favorite package manager. On Windows these need to be installed separately and added to your build path. 
+This requires the libraries `SOIL` and `glfw` to be installed. This can be done using your favorite package manager. On Windows these need to be installed separately and added to your build path. 
+Running mustache-nemesis can be done by executing `./build.sh`. This creates `./brick-plane-scissors`; running this starts the game.
 
 ##Playing mustache-nemesis
 
