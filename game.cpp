@@ -258,7 +258,10 @@ void Game::checkCollision()
 			if(Collision::intersects(oit->getRect(), (*bit)->getCollider()))
 			{
 				if(winsOf((*bit)->getMaterial(), oit->getMaterial()))
+				{
 					obstacles.erase(oit);
+					currentScore++;
+				}
 				bullets.erase(bit);
 				collision = true;
 				break;
@@ -274,12 +277,18 @@ void Game::checkCollision()
 
 void Game::handleCollision()
 {
-	//TODO show replay screen?
+	if(bird->getPosition().x > distanceHighScore)
+		distanceHighScore = bird->getPosition().x;
+	
 	bird->reset();
 	pew = 0;
 
 	bullets.clear();
 	obstacles.clear();
+	
+	if(currentScore > highScore)
+		highScore = currentScore;
+	currentScore = 0;
 }
 
 void Game::draw() 
@@ -464,6 +473,8 @@ void Game::play()
 
 		lastFrameTime = currentFrameTime;
 	}
+	
+	cout << "Your highscore was: " << highScore << " razors destroyed, and "<< distanceHighScore << " meters traveled!" << endl;
 }
 
 /**
