@@ -49,7 +49,7 @@ class Game
 		float timeSinceFire;
 		int currentScore, highScore;
 		float distanceHighScore;
-		int heightMapStepX = 20, heightMapStepZ = 6;
+		int heightMapStepX = 100, heightMapStepZ = 200;
 		float heightMapScale = 0.1f;
 		glm::vec3 invLightDir = glm::normalize(glm::vec3(1.f, 1.5f, 1.f));
 		glm::vec4 groundColor = glm::vec4(0.1f, 0.8f, 0.1f, 1.f);
